@@ -1288,7 +1288,7 @@ Object.assign(S, {
       });
       if(Array.isArray(res)){
         res.forEach(row => {
-          try{ localStorage.setItem('pfin_'+row.key, JSON.stringify(row.value)); }catch{}
+          try{ const val = typeof row.value === 'string' ? row.value : JSON.stringify(row.value); localStorage.setItem('pfin_'+row.key, val); }catch{}
         });
       }
     } catch(e){ console.warn('loadFromCloud falhou, usando dados locais:', e.message); }
