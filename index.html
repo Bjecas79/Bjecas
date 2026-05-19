@@ -234,6 +234,22 @@ td.muted{color:var(--muted)}
 .treino-tipo-btn:hover{background:var(--border)}
 .treino-tipo-btn.selected{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
 @media(max-width:700px){#treino-layout{grid-template-columns:1fr !important}}
+
+.home-btn{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:8px;padding:20px 12px;border-radius:14px;border:1.5px solid var(--border);
+  background:var(--bg2);color:var(--text);cursor:pointer;font-family:'DM Sans',system-ui;
+  font-size:13px;font-weight:600;transition:all .2s;text-align:center;
+}
+.home-btn:hover{background:var(--bg3);border-color:var(--accent);color:var(--accent)}
+.home-btn-icon{font-size:28px;line-height:1}
+
+/* GDCBS expand animation */
+#nav-gdcbs-sub{overflow:hidden}
+#nav-gdcbs-sub.open{display:flex !important}
+#nav-gdcbs-main.open{color:var(--accent);background:#eae8fb;font-weight:600}
+#nav-gdcbs-main.open #nav-gdcbs-chevron,
+#nav-gdcbs-main.open .ti-chevron-right{transform:rotate(90deg)}
 </style>
 </head>
 <body>
@@ -275,8 +291,11 @@ td.muted{color:var(--muted)}
   <button class="nav-item" onclick="goto('gym',this)"><i class="ti ti-barbell"></i> ProAventuras</button>
   <button class="nav-item" onclick="goto('treino',this)"><i class="ti ti-run"></i> Treino &amp; Atividade</button>
   <button class="nav-item" onclick="goto('sofia',this)"><i class="ti ti-heart"></i> Sofia</button>
-  <button class="nav-item" onclick="goto('gdcbs',this)"><i class="ti ti-building"></i> GDCBS - Abertura</button>
-  <button class="nav-item" onclick="goto('clau',this)"><i class="ti ti-building"></i> GDCBS - Clausura</button>
+  <button class="nav-item" id="nav-gdcbs-main" onclick="toggleGdcbsNav(event)"><i class="ti ti-building"></i> GDCBS <i class="ti ti-chevron-right" id="nav-gdcbs-chevron" style="margin-left:auto;font-size:12px;transition:transform .2s;flex-shrink:0"></i></button>
+  <div id="nav-gdcbs-sub" style="display:none;flex-direction:column;gap:2px;padding-left:12px">
+    <button class="nav-item" id="nav-gdcbs-abertura" onclick="goto('gdcbs',this)" style="font-size:12px;padding:7px 12px"><i class="ti ti-door-enter"></i> Abertura</button>
+    <button class="nav-item" id="nav-gdcbs-clausura" onclick="goto('clau',this)" style="font-size:12px;padding:7px 12px"><i class="ti ti-door-exit"></i> Clausura</button>
+  </div>
   <button class="nav-item" onclick="goto('dividas',this)"><i class="ti ti-credit-card"></i> Dívidas</button>
   <button class="nav-item" onclick="goto('contas',this)"><i class="ti ti-building-bank"></i> Contas</button>
   <button class="nav-item" onclick="goto('ferias',this)"><i class="ti ti-beach"></i> Férias / Folgas</button>
@@ -353,7 +372,56 @@ td.muted{color:var(--muted)}
   </div>
 
   <!-- GINÁSIO -->
-  <div class="page active" id="page-gym" style="max-width:1300px">
+  <!-- HOME PAGE -->
+  <div class="page active" id="page-home" style="max-width:600px;margin:0 auto;padding:24px 16px">
+    <div style="text-align:center;margin-bottom:32px;padding-top:16px">
+      <div style="font-size:13px;font-weight:600;opacity:.5;letter-spacing:.12em;font-family:'DM Sans',system-ui;text-transform:uppercase">CENAS DO</div>
+      <div style="font-size:52px;font-weight:700;letter-spacing:-.02em;font-family:'Dancing Script',cursive;line-height:.95;color:var(--accent)">Bjecas</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <button class="home-btn" onclick="gotoHome('gym')"><span class="home-btn-icon">🏋️</span><span>ProAventuras</span></button>
+      <button class="home-btn" onclick="gotoHome('treino')"><span class="home-btn-icon">🏃</span><span>Treino &amp; Atividade</span></button>
+      <button class="home-btn" onclick="gotoHome('sofia')"><span class="home-btn-icon">❤️</span><span>Sofia</span></button>
+      <button class="home-btn" onclick="gotoHome('gdcbs-menu')"><span class="home-btn-icon">🏛️</span><span>GDCBS</span></button>
+      <button class="home-btn" onclick="gotoHome('dividas')"><span class="home-btn-icon">💳</span><span>Dívidas</span></button>
+      <button class="home-btn" onclick="gotoHome('contas')"><span class="home-btn-icon">🏦</span><span>Contas</span></button>
+      <button class="home-btn" onclick="gotoHome('ferias')"><span class="home-btn-icon">🏖️</span><span>Férias / Folgas</span></button>
+      <button class="home-btn" onclick="gotoHome('compras')"><span class="home-btn-icon">🛒</span><span>Lista de Compras</span></button>
+    </div>
+    <div style="margin-top:24px;display:flex;justify-content:center;gap:16px">
+      <button class="nav-item" onclick="openYearModal()" style="font-size:12px;padding:6px 12px"><i class="ti ti-calendar"></i> Ano</button>
+      <button class="nav-item" onclick="openSettings()" style="font-size:12px;padding:6px 12px"><i class="ti ti-settings"></i> Definições</button>
+      <button class="nav-item" onclick="doLogout()" style="font-size:12px;padding:6px 12px"><i class="ti ti-logout"></i> Sair</button>
+    </div>
+  </div>
+
+  <!-- GDCBS MENU PAGE -->
+  <div class="page" id="page-gdcbs-menu" style="max-width:600px;margin:0 auto;padding:24px 16px">
+    <div onclick="gotoHome('home')" style="margin-bottom:24px;cursor:pointer;display:inline-flex;flex-direction:row;align-items:center;gap:8px">
+      <i class="ti ti-arrow-left" style="font-size:18px;color:var(--muted)"></i>
+      <div style="display:flex;flex-direction:column;line-height:1">
+        <span style="font-size:11px;font-weight:600;opacity:.5;letter-spacing:.12em;font-family:'DM Sans',system-ui;text-transform:uppercase">CENAS DO</span>
+        <span style="font-size:28px;font-weight:700;letter-spacing:-.02em;font-family:'Dancing Script',cursive;color:var(--accent);line-height:.95">Bjecas</span>
+      </div>
+    </div>
+    <div style="text-align:center;margin-bottom:32px">
+      <div style="font-size:36px;margin-bottom:8px">🏛️</div>
+      <h1 style="font-size:22px;font-weight:700;margin-bottom:4px">GDCBS</h1>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <button class="home-btn" onclick="gotoHome('gdcbs')"><span class="home-btn-icon">🚪</span><span>GDCBS —<br>Abertura</span></button>
+      <button class="home-btn" onclick="gotoHome('clau')"><span class="home-btn-icon">🔒</span><span>GDCBS —<br>Clausura</span></button>
+    </div>
+  </div>
+
+  <div class="page" id="page-gym" style="max-width:1300px">
+    <div onclick="gotoHome('home')" style="margin-bottom:16px;cursor:pointer;display:inline-flex;flex-direction:row;align-items:center;gap:8px">
+      <i class="ti ti-arrow-left" style="font-size:18px;color:var(--muted)"></i>
+      <div style="display:flex;flex-direction:column;line-height:1">
+        <span style="font-size:11px;font-weight:600;opacity:.5;letter-spacing:.12em;font-family:'DM Sans',system-ui;text-transform:uppercase">CENAS DO</span>
+        <span style="font-size:28px;font-weight:700;letter-spacing:-.02em;font-family:'Dancing Script',cursive;color:var(--accent);line-height:.95">Bjecas</span>
+      </div>
+    </div>
     <h1>ProAventuras</h1>
     <p class="subtitle">Registo de presença mensal</p>
     <div class="cards-grid">
@@ -434,6 +502,13 @@ td.muted{color:var(--muted)}
 
   <!-- TREINO & ATIVIDADE FÍSICA -->
   <div class="page" id="page-treino" style="max-width:1300px">
+    <div onclick="gotoHome('home')" style="margin-bottom:16px;cursor:pointer;display:inline-flex;flex-direction:row;align-items:center;gap:8px">
+      <i class="ti ti-arrow-left" style="font-size:18px;color:var(--muted)"></i>
+      <div style="display:flex;flex-direction:column;line-height:1">
+        <span style="font-size:11px;font-weight:600;opacity:.5;letter-spacing:.12em;font-family:'DM Sans',system-ui;text-transform:uppercase">CENAS DO</span>
+        <span style="font-size:28px;font-weight:700;letter-spacing:-.02em;font-family:'Dancing Script',cursive;color:var(--accent);line-height:.95">Bjecas</span>
+      </div>
+    </div>
     <h1>Treino &amp; Atividade Física</h1>
     <p class="subtitle">Registo de treinos mensal</p>
     <div class="cards-grid">
@@ -602,6 +677,13 @@ td.muted{color:var(--muted)}
 
   <!-- GDCBS - ABERTURA -->
   <div class="page" id="page-gdcbs" style="max-width:1300px">
+    <div onclick="gotoHome('home')" style="margin-bottom:16px;cursor:pointer;display:inline-flex;flex-direction:row;align-items:center;gap:8px">
+      <i class="ti ti-arrow-left" style="font-size:18px;color:var(--muted)"></i>
+      <div style="display:flex;flex-direction:column;line-height:1">
+        <span style="font-size:11px;font-weight:600;opacity:.5;letter-spacing:.12em;font-family:'DM Sans',system-ui;text-transform:uppercase">CENAS DO</span>
+        <span style="font-size:28px;font-weight:700;letter-spacing:-.02em;font-family:'Dancing Script',cursive;color:var(--accent);line-height:.95">Bjecas</span>
+      </div>
+    </div>
     <h1>GDCBS — Abertura</h1>
     <p class="subtitle">Registo de presenças · Abertura</p>
 
@@ -684,6 +766,13 @@ td.muted{color:var(--muted)}
 
   <!-- GDCBS - CLAUSURA -->
   <div class="page" id="page-clau" style="max-width:1300px">
+    <div onclick="gotoHome('home')" style="margin-bottom:16px;cursor:pointer;display:inline-flex;flex-direction:row;align-items:center;gap:8px">
+      <i class="ti ti-arrow-left" style="font-size:18px;color:var(--muted)"></i>
+      <div style="display:flex;flex-direction:column;line-height:1">
+        <span style="font-size:11px;font-weight:600;opacity:.5;letter-spacing:.12em;font-family:'DM Sans',system-ui;text-transform:uppercase">CENAS DO</span>
+        <span style="font-size:28px;font-weight:700;letter-spacing:-.02em;font-family:'Dancing Script',cursive;color:var(--accent);line-height:.95">Bjecas</span>
+      </div>
+    </div>
     <h1>GDCBS — Clausura</h1>
     <p class="subtitle">Registo de presenças · Clausura</p>
 
@@ -766,6 +855,13 @@ td.muted{color:var(--muted)}
 
   <!-- SOFIA -->
   <div class="page" id="page-sofia" style="max-width:1300px">
+    <div onclick="gotoHome('home')" style="margin-bottom:16px;cursor:pointer;display:inline-flex;flex-direction:row;align-items:center;gap:8px">
+      <i class="ti ti-arrow-left" style="font-size:18px;color:var(--muted)"></i>
+      <div style="display:flex;flex-direction:column;line-height:1">
+        <span style="font-size:11px;font-weight:600;opacity:.5;letter-spacing:.12em;font-family:'DM Sans',system-ui;text-transform:uppercase">CENAS DO</span>
+        <span style="font-size:28px;font-weight:700;letter-spacing:-.02em;font-family:'Dancing Script',cursive;color:var(--accent);line-height:.95">Bjecas</span>
+      </div>
+    </div>
     <h1>Sofia — Filhota</h1>
     <p class="subtitle">Despesas mensais</p>
     <div class="cards-grid">
@@ -851,6 +947,13 @@ td.muted{color:var(--muted)}
 
   <!-- DÍVIDAS -->
   <div class="page" id="page-dividas" style="max-width:1300px">
+    <div onclick="gotoHome('home')" style="margin-bottom:16px;cursor:pointer;display:inline-flex;flex-direction:row;align-items:center;gap:8px">
+      <i class="ti ti-arrow-left" style="font-size:18px;color:var(--muted)"></i>
+      <div style="display:flex;flex-direction:column;line-height:1">
+        <span style="font-size:11px;font-weight:600;opacity:.5;letter-spacing:.12em;font-family:'DM Sans',system-ui;text-transform:uppercase">CENAS DO</span>
+        <span style="font-size:28px;font-weight:700;letter-spacing:-.02em;font-family:'Dancing Script',cursive;color:var(--accent);line-height:.95">Bjecas</span>
+      </div>
+    </div>
     <h1>Dívidas</h1>
     <p class="subtitle">Acompanhamento e histórico de pagamentos</p>
     <div class="cards-grid" style="margin-bottom:20px">
@@ -928,6 +1031,13 @@ td.muted{color:var(--muted)}
 
   <!-- CONTAS -->
   <div class="page" id="page-contas" style="max-width:1100px">
+    <div onclick="gotoHome('home')" style="margin-bottom:16px;cursor:pointer;display:inline-flex;flex-direction:row;align-items:center;gap:8px">
+      <i class="ti ti-arrow-left" style="font-size:18px;color:var(--muted)"></i>
+      <div style="display:flex;flex-direction:column;line-height:1">
+        <span style="font-size:11px;font-weight:600;opacity:.5;letter-spacing:.12em;font-family:'DM Sans',system-ui;text-transform:uppercase">CENAS DO</span>
+        <span style="font-size:28px;font-weight:700;letter-spacing:-.02em;font-family:'Dancing Script',cursive;color:var(--accent);line-height:.95">Bjecas</span>
+      </div>
+    </div>
     <h1>Contas</h1>
     <p class="subtitle">Gestão mensal por conta</p>
 
@@ -1017,6 +1127,13 @@ td.muted{color:var(--muted)}
 
   <!-- FÉRIAS / FOLGAS -->
   <div class="page" id="page-ferias" style="max-width:1300px">
+    <div onclick="gotoHome('home')" style="margin-bottom:16px;cursor:pointer;display:inline-flex;flex-direction:row;align-items:center;gap:8px">
+      <i class="ti ti-arrow-left" style="font-size:18px;color:var(--muted)"></i>
+      <div style="display:flex;flex-direction:column;line-height:1">
+        <span style="font-size:11px;font-weight:600;opacity:.5;letter-spacing:.12em;font-family:'DM Sans',system-ui;text-transform:uppercase">CENAS DO</span>
+        <span style="font-size:28px;font-weight:700;letter-spacing:-.02em;font-family:'Dancing Script',cursive;color:var(--accent);line-height:.95">Bjecas</span>
+      </div>
+    </div>
     <h1>Férias / Folgas</h1>
     <p class="subtitle">Registo de dias livres</p>
     <div class="cards-grid">
@@ -1171,6 +1288,13 @@ td.muted{color:var(--muted)}
 
   <!-- LISTA DE COMPRAS -->
   <div class="page" id="page-compras" style="max-width:860px">
+    <div onclick="gotoHome('home')" style="margin-bottom:16px;cursor:pointer;display:inline-flex;flex-direction:row;align-items:center;gap:8px">
+      <i class="ti ti-arrow-left" style="font-size:18px;color:var(--muted)"></i>
+      <div style="display:flex;flex-direction:column;line-height:1">
+        <span style="font-size:11px;font-weight:600;opacity:.5;letter-spacing:.12em;font-family:'DM Sans',system-ui;text-transform:uppercase">CENAS DO</span>
+        <span style="font-size:28px;font-weight:700;letter-spacing:-.02em;font-family:'Dancing Script',cursive;color:var(--accent);line-height:.95">Bjecas</span>
+      </div>
+    </div>
     <h1>Lista de Compras</h1>
     <p class="subtitle">Seleciona produtos para adicionar à lista</p>
 
@@ -1218,6 +1342,42 @@ const S = {
   get(k){try{const r=localStorage.getItem('pfin_'+k);return r?JSON.parse(r):null}catch{return null}},
   set(k,v){try{localStorage.setItem('pfin_'+k,JSON.stringify(v))}catch{}}
 };
+
+function gotoHome(page){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));
+  if(page === 'home'){
+    document.getElementById('page-home').classList.add('active');
+    document.getElementById('sidebar').style.display='none';
+    if(document.getElementById('main-content')) document.getElementById('main-content').style.marginLeft='0';
+    return;
+  }
+  document.getElementById('sidebar').style.display='none';
+  const pageEl = document.getElementById('page-'+page);
+  if(pageEl) pageEl.classList.add('active');
+  closeSidebar && closeSidebar();
+}
+
+let _gdcbsNavOpen = false;
+
+function toggleGdcbsNav(e){
+  e && e.stopPropagation();
+  _gdcbsNavOpen = !_gdcbsNavOpen;
+  const sub = document.getElementById('nav-gdcbs-sub');
+  const main = document.getElementById('nav-gdcbs-main');
+  const chev = document.getElementById('nav-gdcbs-chevron');
+  if(_gdcbsNavOpen){
+    sub.classList.add('open');
+    main.classList.add('open');
+    chev.style.transform = 'rotate(90deg)';
+  } else {
+    sub.classList.remove('open');
+    main.classList.remove('open');
+    chev.style.transform = '';
+  }
+}
+
+
 </script>
 
 <script>
@@ -1362,6 +1522,11 @@ function goto(p, btn){
   document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));
   document.getElementById('page-'+p).classList.add('active');
   btn.classList.add('active');
+  // Keep GDCBS nav group open and highlighted when navigating to its sub-pages
+  if(p === 'gdcbs' || p === 'clau'){
+    if(!_gdcbsNavOpen) toggleGdcbsNav();
+    document.getElementById('nav-gdcbs-main').classList.add('open');
+  }
   closeSidebar();
 }
 
@@ -3623,277 +3788,4 @@ function renderDividaChart(){
   const step = Math.max(1, Math.floor((points.length-1)/(maxLabels-1)));
   points.forEach((p,i) => {
     const cx = px(i), cy = py(p.val);
-    const dot = document.createElementNS('http://www.w3.org/2000/svg','circle');
-    dot.setAttribute('cx', cx); dot.setAttribute('cy', cy);
-    dot.setAttribute('r', i===0||i===points.length-1?3.5:2.5);
-    dot.setAttribute('fill','var(--accent)');
-    svg.appendChild(dot);
-
-    // Tooltip nativo via title
-    const t = document.createElementNS('http://www.w3.org/2000/svg','title');
-    t.textContent = p.label+': '+Number(p.val).toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2})+'€';
-    dot.appendChild(t);
-
-    // Label no eixo X (apenas alguns)
-    const showLabel = i===0 || i===points.length-1 || (points.length<=7) || (i % step === 0);
-    if(showLabel){
-      const txt = document.createElementNS('http://www.w3.org/2000/svg','text');
-      txt.setAttribute('x', cx);
-      txt.setAttribute('y', PT+chartH+14);
-      txt.setAttribute('text-anchor','middle');
-      txt.setAttribute('font-size','8');
-      txt.setAttribute('fill','var(--muted)');
-      txt.setAttribute('font-family','DM Sans,system-ui,sans-serif');
-      txt.textContent = p.label;
-      svg.appendChild(txt);
-    }
-  });
-
-  // Label do valor final (destaque)
-  const last = points[points.length-1];
-  const lx = px(points.length-1), ly = py(last.val);
-  const valLbl = document.createElementNS('http://www.w3.org/2000/svg','text');
-  valLbl.setAttribute('x', lx);
-  valLbl.setAttribute('y', ly - 7);
-  valLbl.setAttribute('text-anchor','middle');
-  valLbl.setAttribute('font-size','9');
-  valLbl.setAttribute('font-weight','600');
-  valLbl.setAttribute('fill','var(--accent)');
-  valLbl.setAttribute('font-family','DM Mono,monospace');
-  valLbl.textContent = Number(last.val).toLocaleString('pt-PT',{minimumFractionDigits:0,maximumFractionDigits:0})+'€';
-  svg.appendChild(valLbl);
-
-  const pctDescida = totalOriginal > 0 ? Math.round((1 - last.val/totalOriginal)*100) : 0;
-  labelEl.textContent = pctDescida+'% reduzido';
-}
-
-// ── EXPORT / IMPORT ──────────────────────────────────────
-function exportarDados(){
-  const keys = ['gym','gymConfig','treino','gdcbs','gdcbsConfig','sofia','sofiaAcumulado','dividas','dividaHist','contas','ferias','feriasPeriodos','feriasDetalhes','compras','clau','clauConfig','partilha'];
-  const data = {};
-  keys.forEach(k => { const v = S.get(k); if(v !== null) data[k] = v; });
-  data._exportDate = new Date().toISOString();
-  data._version = 12;
-  const json = JSON.stringify(data, null, 2);
-  const blob = new Blob([json], {type:'application/json'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  const dateStr = new Date().toISOString().split('T')[0];
-  a.href = url; a.download = 'bjecas_backup_'+dateStr+'.json';
-  document.body.appendChild(a); a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-}
-
-function importarDados(event){
-  const file = event.target.files[0];
-  if(!file) return;
-  const reader = new FileReader();
-  reader.onload = function(e){
-    try {
-      const data = JSON.parse(e.target.result);
-      if(!data || typeof data !== 'object') throw new Error('Ficheiro inválido');
-      const keys = ['gym','gymConfig','treino','gdcbs','gdcbsConfig','sofia','sofiaAcumulado','dividas','dividaHist','contas','ferias','feriasPeriodos','feriasDetalhes','compras','clau','clauConfig','partilha'];
-      let imported = 0;
-      keys.forEach(k => { if(data[k] !== undefined){ S.set(k, data[k]); imported++; } });
-      if(imported === 0) throw new Error('Nenhum dado reconhecido');
-      // Recarrega todas as variáveis em memória
-      const asArray = v => Array.isArray(v) ? v : (v && typeof v === 'object' ? Object.values(v) : []);
-      gymData = S.get('gym')||{};
-      treinoData = S.get('treino')||{};
-      gymConfig = S.get('gymConfig')||{hora:0,aula:0};
-      gdcbsData = S.get('gdcbs')||{};
-      sofiaData = S.get('sofia')||{};
-      sofiaAcumulado = S.get('sofiaAcumulado')||0;
-      dividas = asArray(S.get('dividas'));
-      dividaHist = asArray(S.get('dividaHist'));
-      contas = asArray(S.get('contas'));
-      feriasData = S.get('ferias')||{};
-      feriasPeriodos = asArray(S.get('feriasPeriodos'));
-      feriasDetalhes = S.get('feriasDetalhes')||{};
-      comprasData = asArray(S.get('compras'));
-      partilhaData = S.get('partilha')||{};
-      planosList = asArray(S.get('planosList'));
-      // Re-renderiza tudo
-      renderGym();renderTreino();renderGdcbs();renderClau();renderSofia();renderPartilha();renderDividas();renderContas();renderFerias();renderCompras();initPlanoUI();
-      closeSettings();
-      // Feedback visual
-      const btn = document.querySelector('[onclick="exportarDados()"]');
-      const flash = document.createElement('div');
-      flash.textContent = '✓ Backup importado com sucesso!';
-      flash.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--accent2);color:#fff;padding:10px 22px;border-radius:10px;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,.2)';
-      document.body.appendChild(flash);
-      setTimeout(()=>flash.remove(), 3000);
-    } catch(err){
-      alert('Erro ao importar: '+err.message);
-    }
-    event.target.value='';
-  };
-  reader.readAsText(file);
-}
-
-// ── AUTH UI ─────────────────────────────────────────────────
-let _authMode = 'login';
-
-function toggleAuthMode(){
-  _authMode = _authMode === 'login' ? 'signup' : 'login';
-  document.getElementById('login-btn').textContent = _authMode === 'login' ? 'Entrar' : 'Criar conta';
-  document.querySelector('.login-toggle').innerHTML = _authMode === 'login'
-    ? 'Ainda não tens conta? <a onclick="toggleAuthMode()">Criar conta</a>'
-    : 'Já tens conta? <a onclick="toggleAuthMode()">Entrar</a>';
-  document.getElementById('login-error').style.display='none';
-}
-
-async function doLogin(){
-  const email = document.getElementById('login-email').value.trim();
-  const pass = document.getElementById('login-pass').value;
-  const errEl = document.getElementById('login-error');
-  const btn = document.getElementById('login-btn');
-  errEl.style.display='none';
-  if(!email||!pass){errEl.textContent='Preenche email e password.';errEl.style.display='block';return;}
-  btn.disabled=true; btn.textContent='A entrar…';
-  try{
-    let session;
-    if(_authMode==='login'){
-      session = await authSignIn(email,pass);
-    } else {
-      const r = await authSignUp(email,pass);
-      if(r.access_token){ session=r; }
-      else { errEl.textContent='Conta criada! Verifica o email para confirmar, depois entra.'; errEl.style.display='block'; btn.disabled=false; btn.textContent='Criar conta'; return; }
-    }
-    _supaSession = session;
-    saveSession(session);
-    await bootApp();
-  }catch(e){
-    errEl.textContent = e.message;
-    errEl.style.display='block';
-    btn.disabled=false;
-    btn.textContent = _authMode==='login'?'Entrar':'Criar conta';
-  }
-}
-
-document.getElementById('login-pass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
-document.getElementById('login-email').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('login-pass').focus();});
-
-async function doLogout(){
-  if(!confirm('Tens a certeza que queres sair?')) return;
-  try{ await supaFetch('/auth/v1/logout',{method:'POST'}); }catch{}
-  clearSession();
-  S._mem = {};
-  location.reload();
-}
-
-// ── BOOT ────────────────────────────────────────────────────
-async function bootApp(){
-  // Show sync spinner
-  document.getElementById('login-form-wrap').style.display='none';
-  document.getElementById('login-sync-msg').style.display='block';
-
-  // Load data from Supabase
-  await S.loadFromCloud();
-
-  // Reload all in-memory vars from (now-populated) S
-  const asArray = v => Array.isArray(v) ? v : (v && typeof v === 'object' ? Object.values(v) : []);
-  const asObj   = v => (v && typeof v === 'object' && !Array.isArray(v)) ? v : {};
-
-  gymData     = asObj(S.get('gym'));
-  treinoData  = asObj(S.get('treino'));
-  gymConfig   = asObj(S.get('gymConfig')); if(!gymConfig.hora) gymConfig={hora:0,aula:0};
-  gdcbsData   = asObj(S.get('gdcbs'));
-  gdcbsConfig = asObj(S.get('gdcbsConfig')); if(!gdcbsConfig.hora) gdcbsConfig={hora:0,aula:0};
-  sofiaData   = asObj(S.get('sofia'));
-  sofiaAcumulado = S.get('sofiaAcumulado') || 0;
-  dividas     = asArray(S.get('dividas'));
-  dividaHist  = asArray(S.get('dividaHist'));
-  contas      = asArray(S.get('contas'));
-  feriasData  = asObj(S.get('ferias'));
-  feriasPeriodos = asArray(S.get('feriasPeriodos'));
-  feriasDetalhes = asObj(S.get('feriasDetalhes'));
-  comprasData = asArray(S.get('compras'));
-  clauData    = asObj(S.get('clau'));
-  partilhaData = asObj(S.get('partilha'));
-  planosList = asArray(S.get('planosList'));
-
-  // Show user email in sidebar
-  const userEmail = (_supaSession.user || _supaSession.data?.user)?.email || '';
-  document.getElementById('sidebar-user-email').textContent = userEmail;
-
-  // Render
-  document.querySelectorAll('input[type=date]').forEach(i=>i.value=now.toISOString().split('T')[0]);
-  document.getElementById('sidebar-year-label').textContent = now.getFullYear();
-  renderGym();renderTreino();renderGdcbs();renderClau();renderSofia();renderPartilha();renderDividas();renderContas();renderFerias();renderCompras();initPlanoUI();
-
-  // Hide login screen
-  document.getElementById('login-screen').style.display='none';
-}
-
-// ── PWA MANIFEST (inline blob) ───────────────────────────────
-const manifest = {
-  name: 'Cenas do Bjecas',
-  short_name: 'Bjecas',
-  description: 'Finanças pessoais do Bjecas',
-  start_url: location.href,
-  display: 'standalone',
-  background_color: '#f5f6fa',
-  theme_color: '#5b52d6',
-  icons: [
-    { src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='120' fill='%235b52d6'/%3E%3Ctext x='50%25' y='58%25' dominant-baseline='middle' text-anchor='middle' font-family='Georgia,serif' font-size='320' fill='white'%3EB%3C/text%3E%3C/svg%3E", sizes: "512x512", type: "image/svg+xml", purpose: "any maskable" }
-  ]
-};
-const mblob = new Blob([JSON.stringify(manifest)],{type:'application/manifest+json'});
-document.getElementById('pwa-manifest').href = URL.createObjectURL(mblob);
-
-// ── SERVICE WORKER ───────────────────────────────────────────
-// Desregista SWs antigos e limpa cache (evita ficheiro antigo em cache no tlm)
-if('serviceWorker' in navigator){
-  navigator.serviceWorker.getRegistrations().then(regs=>{regs.forEach(r=>r.unregister());});
-}
-if('caches' in window){caches.keys().then(ks=>ks.forEach(k=>caches.delete(k)));}
-
-// ── STARTUP ─────────────────────────────────────────────────
-function showLogin(){
-  document.getElementById('login-sync-msg').style.display='none';
-  document.getElementById('login-form-wrap').style.display='block';
-  document.getElementById('login-screen').style.display='flex';
-}
-
-function showSyncing(){
-  document.getElementById('login-form-wrap').style.display='none';
-  document.getElementById('login-sync-msg').style.display='block';
-  document.getElementById('login-screen').style.display='flex';
-  // Se passarem 10 segundos sem resposta, mostra botão de retry
-  setTimeout(()=>{
-    const syncEl = document.getElementById('login-sync-msg');
-    if(syncEl && syncEl.style.display!=='none'){
-      document.getElementById('login-sync-retry').style.display='block';
-    }
-  }, 10000);
-}
-
-(async()=>{
-  let session = loadSession();
-  if(session){
-    showSyncing();
-    try{
-      const refreshed = await Promise.race([
-        authRefresh(session.refresh_token),
-        new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),8000))
-      ]);
-      if(refreshed?.access_token){ session=refreshed; saveSession(session); }
-    }catch(e){ console.warn('Token refresh:', e.message); }
-
-    if(session?.access_token){
-      _supaSession = session;
-      try{
-        await bootApp();
-        return;
-      }catch(e){
-        console.warn('bootApp falhou:', e.message);
-      }
-    }
-  }
-  showLogin();
-})();
-</script>
-</body>
-</html>
+    const dot = document.createElementNS('http://www.w3.org/2000/
