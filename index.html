@@ -1298,13 +1298,24 @@ Object.assign(S, {
     const uid = (_supaSession.user || _supaSession.data?.user)?.id;
     if(!uid) return;
     try {
-      await supaFetch('/rest/v1/user_data', {
-        method:'POST',
+      const patchRes = await fetch(SUPA_URL+'/rest/v1/user_data?user_id=eq.'+uid+'&key=eq.'+encodeURIComponent(key), {
+        method:'PATCH',
         headers:{
-          'Prefer':'resolution=merge-duplicates',
+          'Content-Type':'application/json',
+          'apikey': SUPA_KEY,
+          'Authorization': 'Bearer '+_supaSession.access_token,
+          'Prefer':'return=representation,count=exact'
         },
-        body: JSON.stringify({user_id: uid, key, value})
+        body: JSON.stringify({value})
       });
+      const patchJson = await patchRes.json().catch(()=>[]);
+      if(!Array.isArray(patchJson) || patchJson.length === 0){
+        await supaFetch('/rest/v1/user_data', {
+          method:'POST',
+          headers:{'Prefer':'return=minimal'},
+          body: JSON.stringify({user_id: uid, key, value})
+        });
+      }
     } catch(e){ console.warn('saveToCloud falhou:', e.message); }
   }
 });
