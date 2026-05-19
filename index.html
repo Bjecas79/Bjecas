@@ -272,7 +272,7 @@ td.muted{color:var(--muted)}
 <aside class="sidebar" id="sidebar">
   <div class="sidebar-logo"><div class="sidebar-logo-text"><span class="sidebar-logo-cenas">CENAS do</span><span class="sidebar-logo-bjecas">Bjecas</span></div></div>
 
-  <button class="nav-item" onclick="goto('gym',this)"><i class="ti ti-barbell"></i> Ginásio</button>
+  <button class="nav-item" onclick="goto('gym',this)"><i class="ti ti-barbell"></i> ProAventuras</button>
   <button class="nav-item" onclick="goto('treino',this)"><i class="ti ti-run"></i> Treino &amp; Atividade</button>
   <button class="nav-item" onclick="goto('sofia',this)"><i class="ti ti-heart"></i> Sofia</button>
   <button class="nav-item" onclick="goto('gdcbs',this)"><i class="ti ti-building"></i> GDCBS - Abertura</button>
@@ -354,7 +354,7 @@ td.muted{color:var(--muted)}
 
   <!-- GINÁSIO -->
   <div class="page active" id="page-gym" style="max-width:1300px">
-    <h1>Ginásio</h1>
+    <h1>ProAventuras</h1>
     <p class="subtitle">Registo de presença mensal</p>
     <div class="cards-grid">
       <div class="metric"><div class="metric-label">Dias este mês</div><div class="metric-value green" id="g-count">0</div></div>
@@ -1539,6 +1539,7 @@ function gymNext(){if(gymMonth<11){gymMonth++;}renderGym();}
 // ── TREINO & ATIVIDADE FÍSICA ────────────────────────────────
 const TREINO_TIPOS = {
   musculacao:{emoji:'🏋️', label:'Musculação', color:'#5b52d6', bg:'#eae8fb'},
+  ginasio:   {emoji:'🏋️', label:'Musculação', color:'#5b52d6', bg:'#eae8fb'},
   corrida:   {emoji:'🏃', label:'Corrida',    color:'#2a7d1f', bg:'#d6f5eb'},
   bicicleta: {emoji:'🚴', label:'Bicicleta',  color:'#d4820a', bg:'#fdefd6'},
   natacao:   {emoji:'🏊', label:'Natação',    color:'#2358a0', bg:'#dceeff'},
