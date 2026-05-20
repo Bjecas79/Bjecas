@@ -1521,7 +1521,7 @@ function renderGym(){
       infoEl.className = 'day-info';
       const parts = [];
       if(entry.horas) parts.push(entry.horas+'h');
-      if(entry.aulas) parts.push(entry.aulas+'a');
+      if(entry.aulas) parts.push(entry.aulas+'aula');
       infoEl.textContent = parts.join(' ');
       el.appendChild(infoEl);
       if(entry.obs){
@@ -2137,7 +2137,7 @@ function renderGdcbs(){
       infoEl.className = 'day-info';
       const parts = [];
       if(entry.horas) parts.push(entry.horas+'h');
-      if(entry.aulas) parts.push(entry.aulas+'a');
+      if(entry.aulas) parts.push(entry.aulas+'aula');
       if(entry.jornada) parts.push('⚽');
       infoEl.textContent = parts.join(' ');
       el.appendChild(infoEl);
