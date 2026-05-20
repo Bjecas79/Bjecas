@@ -1430,20 +1430,23 @@ function closeSidebar(){
   document.getElementById('sidebar-overlay').classList.remove('open');
 }
 
-// Migrar dados antigos (sem ano) para chaves com ano, se ainda nao migrado
+// Migrar dados antigos (sem ano) para chaves com ano - sempre faz merge para nao perder dados
 (function(){
   const y = new Date().getFullYear();
-  const keys = ['gym','gdcbs','clau','sofia','partilha','ferias'];
+  const keys = ['gym','gdcbs','clau','sofia','partilha','ferias','treino'];
   keys.forEach(k=>{
-    const old = S.get(k);
-    if(old && Object.keys(old).length > 0 && !S.get(k+'_'+y)){
-      S.set(k+'_'+y, old);
+    const oldData = S.get(k);
+    if(oldData && typeof oldData === 'object' && Object.keys(oldData).length > 0){
+      const existing = S.get(k+'_'+y) || {};
+      // Merge: dados antigos + dados novos (novos têm prioridade)
+      const merged = Object.assign({}, oldData, existing);
+      S.set(k+'_'+y, merged);
     }
   });
 })();
 
 let gymData = S.get('gym_'+new Date().getFullYear()) || {};
-let treinoData = S.get('treino') || {};
+let treinoData = S.get('treino_'+new Date().getFullYear()) || {};
 let gymConfig = S.get('gymConfig') || {hora: 0, aula: 0};
 let gdcbsData = S.get('gdcbs_'+new Date().getFullYear()) || {};
 let gdcbsConfig = S.get('gdcbsConfig') || {hora: 0, aula: 0};
@@ -2039,7 +2042,7 @@ function saveTreinoDay(){
   } else {
     treinoData[key][treinoModalDay]={tipo,dur,cals,obs};
   }
-  S.set('treino',treinoData);
+  S.set('treino_'+treinoYear,treinoData);
   closeTreinoModal();
   renderTreino();
 }
@@ -2048,7 +2051,7 @@ function clearTreinoDay(){
   if(treinoModalDay===null)return;
   const key=treinoYear+'-'+treinoMonth;
   if(treinoData[key])delete treinoData[key][treinoModalDay];
-  S.set('treino',treinoData);
+  S.set('treino_'+treinoYear,treinoData);
   closeTreinoModal();
   renderTreino();
 }
@@ -2688,7 +2691,13 @@ function renderSofia(){
   document.getElementById('s-total').textContent=fmt(grandTotal);
   document.getElementById('s-mes').textContent=fmt(totalMes);
   document.getElementById('s-num').textContent=numTotal;
-  document.getElementById('s-acumulado').textContent=fmt(sofiaAcumulado + grandTotal);
+  // Acumulado real: soma de todos os anos guardados
+  let acumuladoReal = 0;
+  for(let y=2020; y<=new Date().getFullYear()+1; y++){
+    const yd = S.get('sofia_'+y) || {};
+    Object.values(yd).forEach(m=>{ if(m && typeof m==='object') Object.values(m).forEach(arr=>{ if(Array.isArray(arr)) arr.forEach(e=>{ acumuladoReal += (e.val||0); }); }); });
+  }
+  document.getElementById('s-acumulado').textContent=fmt(acumuladoReal);
 
   // Painel de resumo lateral — despesas do mês agrupadas por dia
   const resumoEl = document.getElementById('sofia-resumo-list');
@@ -3124,6 +3133,7 @@ function saveYear(){
   if(!y||y<2020||y>2099) return;
 
   // Guardar dados do ano atual antes de mudar
+  S.set('treino_'+treinoYear, treinoData);
   S.set('gym_'+gymYear, gymData);
   S.set('gdcbs_'+gdcbsYear, gdcbsData);
   S.set('clau_'+clauYear, clauData);
@@ -3132,6 +3142,7 @@ function saveYear(){
   S.set('ferias_'+feriasYear, feriasData);
 
   // Carregar dados do novo ano (ou começar vazio se nao existirem)
+  treinoData = S.get('treino_'+y) || {};
   gymData   = S.get('gym_'+y)     || {};
   gdcbsData = S.get('gdcbs_'+y)   || {};
   clauData  = S.get('clau_'+y)    || {};
@@ -3140,6 +3151,7 @@ function saveYear(){
   feriasData = S.get('ferias_'+y) || {};
 
   // Definir ano e voltar a Janeiro
+  treinoYear = y; treinoMonth = 0;
   gymYear = y;    gymMonth = 0;
   gdcbsYear = y;  gdcbsMonth = 0;
   clauYear = y;   clauMonth = 0;
@@ -3149,7 +3161,7 @@ function saveYear(){
 
   document.getElementById('sidebar-year-label').textContent = y;
   closeYearModal();
-  renderGym(); renderGdcbs(); renderClau(); renderSofia(); renderPartilha(); renderFerias();
+  renderTreino(); renderGym(); renderGdcbs(); renderClau(); renderSofia(); renderPartilha(); renderFerias();
 }
 
 // ── FÉRIAS / FOLGAS ──────────────────────────────────────
@@ -3812,7 +3824,7 @@ function importarDados(event){
       // Recarrega todas as variáveis em memória
       const asArray = v => Array.isArray(v) ? v : (v && typeof v === 'object' ? Object.values(v) : []);
       gymData = S.get('gym')||{};
-      treinoData = S.get('treino')||{};
+      treinoData = S.get('treino_'+treinoYear)||{};
       gymConfig = S.get('gymConfig')||{hora:0,aula:0};
       gdcbsData = S.get('gdcbs')||{};
       sofiaData = S.get('sofia')||{};
@@ -3909,7 +3921,7 @@ async function bootApp(){
   const asObj   = v => (v && typeof v === 'object' && !Array.isArray(v)) ? v : {};
 
   gymData     = asObj(S.get('gym'));
-  treinoData  = asObj(S.get('treino'));
+  treinoData  = asObj(S.get('treino_'+treinoYear));
   gymConfig   = asObj(S.get('gymConfig')); if(!gymConfig.hora) gymConfig={hora:0,aula:0};
   gdcbsData   = asObj(S.get('gdcbs'));
   gdcbsConfig = asObj(S.get('gdcbsConfig')); if(!gdcbsConfig.hora) gdcbsConfig={hora:0,aula:0};
