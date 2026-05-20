@@ -13,6 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Caveat:wght@600;700&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -411,8 +412,16 @@ td.muted{color:var(--muted)}
   </div>
 
   <div class="page" id="page-gym" style="max-width:1300px">
-    <h1>ProAventuras</h1>
-    <p class="subtitle">Registo de presença mensal</p>
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:4px;gap:12px">
+      <div>
+        <h1 style="margin-bottom:0">ProAventuras</h1>
+        <p class="subtitle" style="margin-bottom:0">Registo de presença mensal</p>
+      </div>
+      <button class="btn" onclick="exportGymPDF()" id="gym-pdf-btn" style="flex-shrink:0;margin-top:4px">
+        <i class="ti ti-file-type-pdf" style="font-size:15px;color:#d63b3b"></i> Exportar PDF
+      </button>
+    </div>
+    <div style="margin-bottom:24px"></div>
     <div class="cards-grid">
       <div class="metric"><div class="metric-label">Dias este mês</div><div class="metric-value green" id="g-count">0</div></div>
       <div class="metric"><div class="metric-label">Horas de sala</div><div class="metric-value purple" id="g-hours">0h</div></div>
@@ -823,8 +832,16 @@ td.muted{color:var(--muted)}
 
   <!-- SOFIA -->
   <div class="page" id="page-sofia" style="max-width:1300px">
-    <h1>Sofia — Filhota</h1>
-    <p class="subtitle">Despesas mensais</p>
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:4px;gap:12px">
+      <div>
+        <h1 style="margin-bottom:0">Sofia — Filhota</h1>
+        <p class="subtitle" style="margin-bottom:0">Despesas mensais</p>
+      </div>
+      <button class="btn" onclick="exportSofiaPDF()" id="sofia-pdf-btn" style="flex-shrink:0;margin-top:4px">
+        <i class="ti ti-file-type-pdf" style="font-size:15px;color:#d63b3b"></i> Exportar PDF
+      </button>
+    </div>
+    <div style="margin-bottom:24px"></div>
     <div class="cards-grid">
       <div class="metric"><div class="metric-label">Total Acumulado</div><div class="metric-value red" id="s-acumulado">0,00 €</div></div>
       <div class="metric"><div class="metric-label">Total do Ano</div><div class="metric-value amber" id="s-total">0,00 €</div></div>
@@ -4040,6 +4057,546 @@ if('serviceWorker' in navigator){
   navigator.serviceWorker.getRegistrations().then(regs=>{regs.forEach(r=>r.unregister());});
 }
 if('caches' in window){caches.keys().then(ks=>ks.forEach(k=>caches.delete(k)));}
+
+// ── EXPORTAR PDF — PROAVENTURAS ─────────────────────────────
+async function exportGymPDF(){
+  const btn = document.getElementById('gym-pdf-btn');
+  const origHtml = btn.innerHTML;
+  btn.innerHTML = '<i class="ti ti-loader" style="font-size:15px"></i> A gerar...';
+  btn.disabled = true;
+
+  await new Promise(r => setTimeout(r, 60)); // deixa o browser respirar
+
+  try {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+
+    const PAGE_W = 210, PAGE_H = 297;
+    const ML = 14, MR = 14, MT = 16;
+    const CONTENT_W = PAGE_W - ML - MR;
+
+    // ── Cores e helpers ─────────────────────────────────────
+    const C = {
+      accent:  [91, 82, 214],
+      green:   [31, 169, 122],
+      danger:  [214, 59, 59],
+      warn:    [212, 130, 10],
+      muted:   [139, 144, 168],
+      border:  [226, 229, 239],
+      bg3:     [238, 240, 246],
+      text:    [26, 29, 46],
+      white:   [255, 255, 255],
+    };
+
+    const setColor = (rgb, type='fill') => {
+      if(type==='fill') doc.setFillColor(...rgb);
+      else doc.setTextColor(...rgb);
+    };
+
+    const key = gymYear + '-' + gymMonth;
+    const dayMap = gymData[key] || {};
+    const d0 = new Date(gymYear, gymMonth, 1);
+    const daysInMonth = new Date(gymYear, gymMonth + 1, 0).getDate();
+    const mesLabel = d0.toLocaleDateString('pt-PT', {month:'long', year:'numeric'});
+    const mesCapit = mesLabel.charAt(0).toUpperCase() + mesLabel.slice(1);
+
+    // Calcula totais
+    let totalDias = 0, totalHoras = 0, totalAulas = 0;
+    for(let d = 1; d <= daysInMonth; d++){
+      const e = dayMap[d];
+      if(e && (e.horas > 0 || e.aulas > 0)){
+        totalDias++;
+        totalHoras += e.horas || 0;
+        totalAulas += e.aulas || 0;
+      }
+    }
+    const earn = (gymConfig.hora||0)*totalHoras + (gymConfig.aula||0)*totalAulas;
+    const horasStr = totalHoras % 1 === 0 ? totalHoras + 'h' : totalHoras.toFixed(1) + 'h';
+
+    let y = MT;
+
+    // ── Cabeçalho ────────────────────────────────────────────
+    doc.setFillColor(...C.accent);
+    doc.roundedRect(ML, y, CONTENT_W, 18, 3, 3, 'F');
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(15);
+    doc.setTextColor(...C.white);
+    doc.text('ProAventuras', ML + 6, y + 7);
+    doc.setFont('helvetica','normal');
+    doc.setFontSize(9);
+    doc.setTextColor(210, 208, 245);
+    doc.text(mesCapit, ML + 6, y + 13.5);
+    // data de exportação
+    const hoje = new Date().toLocaleDateString('pt-PT',{day:'2-digit',month:'2-digit',year:'numeric'});
+    doc.text('Exportado em ' + hoje, PAGE_W - MR - 2, y + 13.5, {align:'right'});
+    y += 24;
+
+    // ── Métricas (4 cards) ───────────────────────────────────
+    const cardW = (CONTENT_W - 9) / 4;
+    const metrics = [
+      { label: 'Dias este mês',       value: String(totalDias),  color: C.green  },
+      { label: 'Horas de sala',        value: horasStr,           color: C.accent },
+      { label: 'Aulas dadas',          value: String(totalAulas), color: C.warn   },
+      { label: 'Estimativa ganhos',    value: (gymConfig.hora||gymConfig.aula) ? totalDias > 0 ? earn.toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2})+' €' : '0,00 €' : '—', color: C.green },
+    ];
+    metrics.forEach((m, i) => {
+      const x = ML + i * (cardW + 3);
+      doc.setFillColor(...C.bg3);
+      doc.roundedRect(x, y, cardW, 20, 2, 2, 'F');
+      doc.setFont('helvetica','normal');
+      doc.setFontSize(7);
+      doc.setTextColor(...C.muted);
+      doc.text(m.label.toUpperCase(), x + 4, y + 6);
+      doc.setFont('helvetica','bold');
+      doc.setFontSize(14);
+      doc.setTextColor(...m.color);
+      doc.text(m.value, x + 4, y + 15);
+    });
+    y += 26;
+
+    // ── Calendário ───────────────────────────────────────────
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(8);
+    doc.setTextColor(...C.muted);
+    doc.text('CALENDÁRIO', ML, y);
+    y += 5;
+
+    const CAL_W = CONTENT_W;
+    const CELL = CAL_W / 7;
+    const CELL_H = 11;
+    const days = ['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'];
+
+    // Cabeçalho dos dias
+    days.forEach((d, i) => {
+      doc.setFillColor(...C.bg3);
+      doc.rect(ML + i * CELL, y, CELL, 6, 'F');
+      doc.setFont('helvetica','bold');
+      doc.setFontSize(7);
+      doc.setTextColor(...C.muted);
+      doc.text(d, ML + i * CELL + CELL/2, y + 4.2, {align:'center'});
+    });
+    y += 6;
+
+    const firstDay = d0.getDay();
+    const offset = firstDay === 0 ? 6 : firstDay - 1;
+    const todayD = now.getDate(), todayM = now.getMonth(), todayY = now.getFullYear();
+    let col = offset;
+
+    for(let d = 1; d <= daysInMonth; d++){
+      const cx = ML + col * CELL;
+      const e = dayMap[d];
+      const hasData = e && (e.horas > 0 || e.aulas > 0);
+      const isToday = d === todayD && gymMonth === todayM && gymYear === todayY;
+
+      // Fundo célula
+      if(hasData){
+        doc.setFillColor(214, 245, 235);
+        doc.roundedRect(cx + 0.5, y + 0.5, CELL - 1, CELL_H - 1, 1.5, 1.5, 'F');
+      } else {
+        doc.setFillColor(...C.bg3);
+        doc.roundedRect(cx + 0.5, y + 0.5, CELL - 1, CELL_H - 1, 1.5, 1.5, 'F');
+      }
+      // Borda today
+      if(isToday){
+        doc.setDrawColor(...C.accent);
+        doc.setLineWidth(0.4);
+        doc.roundedRect(cx + 0.5, y + 0.5, CELL - 1, CELL_H - 1, 1.5, 1.5, 'S');
+        doc.setLineWidth(0.2);
+        doc.setDrawColor(...C.border);
+      }
+
+      // Número do dia
+      doc.setFont('helvetica', hasData ? 'bold' : 'normal');
+      doc.setFontSize(8);
+      doc.setTextColor(hasData ? 26 : 139, hasData ? 169 : 144, hasData ? 46 : 168);
+      if(hasData) doc.setTextColor(26, 122, 85);
+      else doc.setTextColor(...C.muted);
+      doc.text(String(d), cx + CELL/2, y + 4.5, {align:'center'});
+
+      // Info: horas/aulas
+      if(hasData){
+        const parts = [];
+        if(e.horas) parts.push((e.horas % 1 === 0 ? e.horas : e.horas.toFixed(1)) + 'h');
+        if(e.aulas) parts.push(e.aulas + 'aul');
+        doc.setFont('helvetica','normal');
+        doc.setFontSize(5.5);
+        doc.setTextColor(31, 122, 85);
+        doc.text(parts.join(' '), cx + CELL/2, y + 9, {align:'center'});
+      }
+
+      col++;
+      if(col === 7){ col = 0; y += CELL_H; }
+    }
+    if(col > 0) y += CELL_H;
+    y += 6;
+
+    // ── Tabela detalhada ─────────────────────────────────────
+    const entries = [];
+    for(let d = 1; d <= daysInMonth; d++){
+      const e = dayMap[d];
+      if(e && (e.horas > 0 || e.aulas > 0)){
+        const date = new Date(gymYear, gymMonth, d);
+        const wd = date.toLocaleDateString('pt-PT',{weekday:'short'});
+        entries.push({ d, wd: wd.charAt(0).toUpperCase()+wd.slice(1), horas: e.horas||0, aulas: e.aulas||0, obs: e.obs||'' });
+      }
+    }
+
+    if(entries.length > 0){
+      doc.setFont('helvetica','bold');
+      doc.setFontSize(8);
+      doc.setTextColor(...C.muted);
+      doc.text('DETALHE POR DIA', ML, y);
+      y += 5;
+
+      // Cabeçalho tabela
+      const cols = [
+        { label: 'Data',        w: 28 },
+        { label: 'Horas sala',  w: 28 },
+        { label: 'Aulas dadas', w: 28 },
+        { label: 'Observações', w: CONTENT_W - 28 - 28 - 28 },
+      ];
+      let cx = ML;
+      doc.setFillColor(...C.bg3);
+      doc.rect(ML, y, CONTENT_W, 6, 'F');
+      cols.forEach(col => {
+        doc.setFont('helvetica','bold');
+        doc.setFontSize(7);
+        doc.setTextColor(...C.muted);
+        doc.text(col.label.toUpperCase(), cx + 2, y + 4.2);
+        cx += col.w;
+      });
+      y += 6;
+
+      // Linhas
+      entries.forEach((row, idx) => {
+        // Nova página se necessário
+        if(y > PAGE_H - 20){
+          doc.addPage();
+          y = MT;
+        }
+        if(idx % 2 === 1){
+          doc.setFillColor(248, 249, 252);
+          doc.rect(ML, y, CONTENT_W, 7, 'F');
+        }
+        const horasDisp = row.horas % 1 === 0 ? row.horas + 'h' : row.horas.toFixed(1) + 'h';
+        const aulasDisp = row.aulas > 0 ? row.aulas + (row.aulas === 1 ? ' aula' : ' aulas') : '—';
+        const rowData = [
+          row.wd + ' ' + row.d,
+          row.horas > 0 ? horasDisp : '—',
+          aulasDisp,
+          row.obs || '',
+        ];
+        cx = ML;
+        rowData.forEach((val, vi) => {
+          doc.setFont('helvetica','normal');
+          doc.setFontSize(8);
+          doc.setTextColor(...C.text);
+          const maxW = cols[vi].w - 4;
+          const txt = doc.splitTextToSize(val, maxW)[0] || '';
+          doc.text(txt, cx + 2, y + 4.8);
+          cx += cols[vi].w;
+        });
+        // Linha separadora
+        doc.setDrawColor(...C.border);
+        doc.setLineWidth(0.2);
+        doc.line(ML, y + 7, ML + CONTENT_W, y + 7);
+        y += 7;
+      });
+
+      y += 6;
+    }
+
+    // ── Rodapé ───────────────────────────────────────────────
+    const pageCount = doc.getNumberOfPages();
+    for(let p = 1; p <= pageCount; p++){
+      doc.setPage(p);
+      doc.setFont('helvetica','normal');
+      doc.setFontSize(7);
+      doc.setTextColor(...C.muted);
+      doc.text('Cenas do Bjecas · ProAventuras · ' + mesCapit, ML, PAGE_H - 8);
+      doc.text('Pág. ' + p + ' / ' + pageCount, PAGE_W - MR, PAGE_H - 8, {align:'right'});
+    }
+
+    // ── Guardar ──────────────────────────────────────────────
+    const filename = 'ProAventuras_' + gymYear + '_' + String(gymMonth+1).padStart(2,'0') + '.pdf';
+    doc.save(filename);
+
+  } catch(err) {
+    console.error('exportGymPDF:', err);
+    alert('Erro ao gerar PDF: ' + err.message);
+  } finally {
+    btn.innerHTML = origHtml;
+    btn.disabled = false;
+  }
+}
+
+// ── EXPORTAR PDF — SOFIA ─────────────────────────────────────
+async function exportSofiaPDF(){
+  const btn = document.getElementById('sofia-pdf-btn');
+  const origHtml = btn.innerHTML;
+  btn.innerHTML = '<i class="ti ti-loader" style="font-size:15px"></i> A gerar...';
+  btn.disabled = true;
+
+  await new Promise(r => setTimeout(r, 60));
+
+  try {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+
+    const PAGE_W = 210, PAGE_H = 297;
+    const ML = 14, MR = 14, MT = 16;
+    const CONTENT_W = PAGE_W - ML - MR;
+
+    const C = {
+      accent:  [91, 82, 214],
+      pink:    [236, 72, 153],
+      danger:  [214, 59, 59],
+      warn:    [212, 130, 10],
+      muted:   [139, 144, 168],
+      border:  [226, 229, 239],
+      bg3:     [238, 240, 246],
+      text:    [26, 29, 46],
+      white:   [255, 255, 255],
+    };
+
+    const key = sofiaYear + '-' + sofiaMonth;
+    const dayMap = sofiaData[key] || {};
+    const d0 = new Date(sofiaYear, sofiaMonth, 1);
+    const daysInMonth = new Date(sofiaYear, sofiaMonth + 1, 0).getDate();
+    const mesLabel = d0.toLocaleDateString('pt-PT', {month:'long', year:'numeric'});
+    const mesCapit = mesLabel.charAt(0).toUpperCase() + mesLabel.slice(1);
+
+    // Calcula totais do mês
+    let totalMes = 0, totalDespesas = 0;
+    const allEntries = [];
+    for(let d = 1; d <= daysInMonth; d++){
+      const entries = dayMap[d] || [];
+      entries.forEach(e => {
+        totalMes += e.val || 0;
+        totalDespesas++;
+        const date = new Date(sofiaYear, sofiaMonth, d);
+        const wd = date.toLocaleDateString('pt-PT',{weekday:'short'});
+        allEntries.push({ d, wd: wd.charAt(0).toUpperCase()+wd.slice(1), desc: e.desc||'', val: e.val||0 });
+      });
+    }
+
+    // Totais globais
+    const totalAno = Object.entries(sofiaData)
+      .filter(([k]) => k.startsWith(sofiaYear+'-'))
+      .flatMap(([,m]) => Object.values(m).flat())
+      .reduce((s,e) => s+(e.val||0), 0);
+
+    const fmt = v => v.toFixed(2).replace('.',',') + ' €';
+
+    let y = MT;
+
+    // ── Cabeçalho ────────────────────────────────────────────
+    doc.setFillColor(...C.pink);
+    doc.rect(0, 0, PAGE_W, 22, 'F');
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(16);
+    doc.setTextColor(...C.white);
+    doc.text('Sofia — Filhota', ML, 14);
+    doc.setFont('helvetica','normal');
+    doc.setFontSize(9);
+    doc.text('Despesas mensais · ' + mesCapit, PAGE_W - MR, 14, {align:'right'});
+    y = 30;
+
+    // ── Métricas ─────────────────────────────────────────────
+    const metrics = [
+      { label: 'Total do Mês', value: fmt(totalMes), color: C.warn },
+      { label: 'Nº Despesas',  value: String(totalDespesas), color: C.accent },
+      { label: 'Total do Ano', value: fmt(totalAno),  color: C.danger },
+    ];
+    const mw = CONTENT_W / metrics.length;
+    metrics.forEach((m, i) => {
+      const mx = ML + i * mw;
+      doc.setFillColor(...C.bg3);
+      doc.roundedRect(mx, y, mw - 3, 18, 2, 2, 'F');
+      doc.setFont('helvetica','normal');
+      doc.setFontSize(7);
+      doc.setTextColor(...C.muted);
+      doc.text(m.label.toUpperCase(), mx + 5, y + 6);
+      doc.setFont('helvetica','bold');
+      doc.setFontSize(12);
+      doc.setTextColor(...m.color);
+      doc.text(m.value, mx + 5, y + 14);
+    });
+    y += 24;
+
+    // ── Calendário visual ────────────────────────────────────
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(8);
+    doc.setTextColor(...C.muted);
+    doc.text('CALENDÁRIO', ML, y);
+    y += 5;
+
+    const weekDays = ['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'];
+    const CELL = CONTENT_W / 7;
+    const CELL_H = 11;
+
+    // Cabeçalho semana
+    weekDays.forEach((wd, i) => {
+      doc.setFont('helvetica','bold');
+      doc.setFontSize(7);
+      doc.setTextColor(...C.muted);
+      doc.text(wd, ML + i * CELL + CELL / 2, y + 4, {align:'center'});
+    });
+    y += 6;
+
+    const startDow = (d0.getDay() + 6) % 7; // 0=Seg
+    let col = startDow;
+    // células vazias iniciais
+    for(let i = 0; i < startDow; i++){
+      doc.setFillColor(...C.bg3);
+      doc.roundedRect(ML + i * CELL + 0.5, y + 0.5, CELL - 1, CELL_H - 1, 1.5, 1.5, 'F');
+    }
+
+    const todayD = now.getDate(), todayM = now.getMonth(), todayY = now.getFullYear();
+
+    for(let d = 1; d <= daysInMonth; d++){
+      const cx = ML + col * CELL;
+      const entries = dayMap[d] || [];
+      const hasData = entries.length > 0;
+      const isToday = d===todayD && sofiaMonth===todayM && sofiaYear===todayY;
+
+      // Fundo
+      if(hasData){
+        doc.setFillColor(253, 232, 232);
+      } else {
+        doc.setFillColor(...C.bg3);
+      }
+      doc.roundedRect(cx + 0.5, y + 0.5, CELL - 1, CELL_H - 1, 1.5, 1.5, 'F');
+
+      // Borda today
+      if(isToday){
+        doc.setDrawColor(...C.pink);
+        doc.setLineWidth(0.4);
+        doc.roundedRect(cx + 0.5, y + 0.5, CELL - 1, CELL_H - 1, 1.5, 1.5, 'S');
+        doc.setLineWidth(0.2);
+        doc.setDrawColor(...C.border);
+      }
+
+      // Número do dia
+      doc.setFont('helvetica', hasData ? 'bold' : 'normal');
+      doc.setFontSize(8);
+      if(hasData) doc.setTextColor(176, 42, 42);
+      else doc.setTextColor(...C.muted);
+      doc.text(String(d), cx + CELL/2, y + 4.5, {align:'center'});
+
+      // Valor total do dia
+      if(hasData){
+        const total = entries.reduce((s,e) => s+(e.val||0), 0);
+        doc.setFont('helvetica','normal');
+        doc.setFontSize(5);
+        doc.setTextColor(176, 42, 42);
+        doc.text(total.toFixed(0)+'€', cx + CELL/2, y + 8.5, {align:'center'});
+      }
+
+      col++;
+      if(col === 7){ col = 0; y += CELL_H; }
+    }
+    if(col > 0) y += CELL_H;
+    y += 6;
+
+    // ── Tabela detalhada ─────────────────────────────────────
+    if(allEntries.length > 0){
+      doc.setFont('helvetica','bold');
+      doc.setFontSize(8);
+      doc.setTextColor(...C.muted);
+      doc.text('DETALHE POR DESPESA', ML, y);
+      y += 5;
+
+      const cols = [
+        { label: 'Data',       w: 28 },
+        { label: 'Descrição',  w: CONTENT_W - 28 - 30 },
+        { label: 'Valor',      w: 30 },
+      ];
+
+      // Cabeçalho tabela
+      let cx = ML;
+      doc.setFillColor(...C.bg3);
+      doc.rect(ML, y, CONTENT_W, 6, 'F');
+      cols.forEach(col => {
+        doc.setFont('helvetica','bold');
+        doc.setFontSize(7);
+        doc.setTextColor(...C.muted);
+        doc.text(col.label.toUpperCase(), cx + 2, y + 4.2);
+        cx += col.w;
+      });
+      y += 6;
+
+      // Linhas
+      allEntries.forEach((row, idx) => {
+        if(y > PAGE_H - 20){
+          doc.addPage();
+          y = MT;
+        }
+        if(idx % 2 === 1){
+          doc.setFillColor(248, 249, 252);
+          doc.rect(ML, y, CONTENT_W, 7, 'F');
+        }
+        const rowData = [
+          row.wd + ' ' + row.d,
+          row.desc,
+          fmt(row.val),
+        ];
+        cx = ML;
+        rowData.forEach((val, vi) => {
+          doc.setFont('helvetica', vi === 2 ? 'bold' : 'normal');
+          doc.setFontSize(8);
+          if(vi === 2) doc.setTextColor(...C.danger); else doc.setTextColor(...C.text);
+          const maxW = cols[vi].w - 4;
+          const txt = doc.splitTextToSize(val, maxW)[0] || '';
+          doc.text(txt, cx + 2, y + 4.8);
+          cx += cols[vi].w;
+        });
+        doc.setDrawColor(...C.border);
+        doc.setLineWidth(0.2);
+        doc.line(ML, y + 7, ML + CONTENT_W, y + 7);
+        y += 7;
+      });
+
+      // Total
+      y += 3;
+      doc.setFillColor(...C.pink);
+      doc.rect(ML, y, CONTENT_W, 8, 'F');
+      doc.setFont('helvetica','bold');
+      doc.setFontSize(9);
+      doc.setTextColor(...C.white);
+      doc.text('TOTAL DO MÊS', ML + 4, y + 5.5);
+      doc.text(fmt(totalMes), ML + CONTENT_W - 4, y + 5.5, {align:'right'});
+      y += 14;
+    } else {
+      doc.setFont('helvetica','normal');
+      doc.setFontSize(10);
+      doc.setTextColor(...C.muted);
+      doc.text('Sem despesas registadas neste mês.', ML, y + 6);
+      y += 14;
+    }
+
+    // ── Rodapé ───────────────────────────────────────────────
+    const pageCount = doc.getNumberOfPages();
+    for(let p = 1; p <= pageCount; p++){
+      doc.setPage(p);
+      doc.setFont('helvetica','normal');
+      doc.setFontSize(7);
+      doc.setTextColor(...C.muted);
+      doc.text('Cenas do Bjecas · Sofia · ' + mesCapit, ML, PAGE_H - 8);
+      doc.text('Pág. ' + p + ' / ' + pageCount, PAGE_W - MR, PAGE_H - 8, {align:'right'});
+    }
+
+    const filename = 'Sofia_' + sofiaYear + '_' + String(sofiaMonth+1).padStart(2,'0') + '.pdf';
+    doc.save(filename);
+
+  } catch(err) {
+    console.error('exportSofiaPDF:', err);
+    alert('Erro ao gerar PDF: ' + err.message);
+  } finally {
+    btn.innerHTML = origHtml;
+    btn.disabled = false;
+  }
+}
 
 // ── STARTUP ─────────────────────────────────────────────────
 function showLogin(){
