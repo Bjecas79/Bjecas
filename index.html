@@ -245,6 +245,9 @@ td.muted{color:var(--muted)}
 .home-btn:hover{background:var(--bg3);border-color:var(--accent);color:var(--accent)}
 .home-btn-icon{font-size:28px;line-height:1}
 
+/* GDCBS Logo */
+.gdcbs-logo{display:inline-block;vertical-align:middle;flex-shrink:0}
+
 /* GDCBS expand animation */
 #nav-gdcbs-sub{overflow:hidden}
 #nav-gdcbs-sub.open{display:flex !important}
@@ -292,7 +295,7 @@ td.muted{color:var(--muted)}
   <button class="nav-item" onclick="goto('gym',this)"><i class="ti ti-barbell"></i> ProAventuras</button>
   <button class="nav-item" onclick="goto('treino',this)"><i class="ti ti-run"></i> Treino &amp; Atividade</button>
   <button class="nav-item" onclick="goto('sofia',this)"><i class="ti ti-heart"></i> Sofia</button>
-  <button class="nav-item" id="nav-gdcbs-main" onclick="toggleGdcbsNav(event)"><i class="ti ti-building"></i> GDCBS <i class="ti ti-chevron-right" id="nav-gdcbs-chevron" style="margin-left:auto;font-size:12px;transition:transform .2s;flex-shrink:0"></i></button>
+  <button class="nav-item" id="nav-gdcbs-main" onclick="toggleGdcbsNav(event)"><span id="nav-gdcbs-logo" style="display:inline-flex;width:18px;height:20px;flex-shrink:0"></span> GDCBS <i class="ti ti-chevron-right" id="nav-gdcbs-chevron" style="margin-left:auto;font-size:12px;transition:transform .2s;flex-shrink:0"></i></button>
   <div id="nav-gdcbs-sub" style="display:none;flex-direction:column;gap:2px;padding-left:12px">
     <button class="nav-item" id="nav-gdcbs-abertura" onclick="goto('gdcbs',this)" style="font-size:12px;padding:7px 12px"><i class="ti ti-door-enter"></i> Abertura</button>
     <button class="nav-item" id="nav-gdcbs-clausura" onclick="goto('clau',this)" style="font-size:12px;padding:7px 12px"><i class="ti ti-door-exit"></i> Clausura</button>
@@ -385,7 +388,7 @@ td.muted{color:var(--muted)}
       <button class="home-btn" onclick="gotoHome('gym')"><span class="home-btn-icon">🏋️</span><span>ProAventuras</span></button>
       <button class="home-btn" onclick="gotoHome('treino')"><span class="home-btn-icon">🏃</span><span>Treino &amp; Atividade</span></button>
       <button class="home-btn" onclick="gotoHome('sofia')"><span class="home-btn-icon">❤️</span><span>Sofia</span></button>
-      <button class="home-btn" onclick="gotoHome('gdcbs-menu')"><span class="home-btn-icon">🏛️</span><span>GDCBS</span></button>
+      <button class="home-btn" onclick="gotoHome('gdcbs-menu')"><span class="home-btn-icon" id="home-gdcbs-logo" style="display:flex;align-items:center;justify-content:center;width:36px;height:40px;margin:0 auto"></span><span>GDCBS</span></button>
       <button class="home-btn" onclick="gotoHome('dividas')"><span class="home-btn-icon">💳</span><span>Dívidas</span></button>
       <button class="home-btn" onclick="gotoHome('contas')"><span class="home-btn-icon">🏦</span><span>Contas</span></button>
       <button class="home-btn" onclick="gotoHome('ferias')"><span class="home-btn-icon">🏖️</span><span>Férias / Folgas</span></button>
@@ -406,8 +409,8 @@ td.muted{color:var(--muted)}
   <!-- GDCBS MENU PAGE -->
   <div class="page" id="page-gdcbs-menu" style="max-width:600px;margin:0 auto;padding:24px 16px">
     <div style="text-align:center;margin-bottom:32px">
-      <div style="font-size:36px;margin-bottom:8px">🏛️</div>
-      <h1 style="font-size:22px;font-weight:700;margin-bottom:4px">GDCBS</h1>
+      <h1 style="font-size:22px;font-weight:700;margin-bottom:16px">GDCBS</h1>
+      <div id="gdcbs-menu-logo" style="display:flex;align-items:center;justify-content:center;margin-bottom:0;height:160px"></div>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
       <button class="home-btn" onclick="gotoHome('gdcbs')"><span class="home-btn-icon">🚪</span><span>GDCBS —<br>Abertura</span></button>
@@ -672,8 +675,13 @@ td.muted{color:var(--muted)}
 
   <!-- GDCBS - ABERTURA -->
   <div class="page" id="page-gdcbs" style="max-width:1300px">
-    <h1>GDCBS — Abertura</h1>
-    <p class="subtitle">Registo de presenças · Abertura</p>
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:4px">
+      <span id="gdcbs-abertura-logo" style="display:inline-flex;width:44px;height:50px;flex-shrink:0"></span>
+      <div>
+        <h1 style="margin-bottom:0">GDCBS — Abertura</h1>
+        <p class="subtitle" style="margin-bottom:0">Registo de presenças · Abertura</p>
+      </div>
+    </div>
 
     <div id="gdcbs-layout" style="display:grid;grid-template-columns:1fr 420px;gap:16px;align-items:start">
 
@@ -759,8 +767,13 @@ td.muted{color:var(--muted)}
 
   <!-- GDCBS - CLAUSURA -->
   <div class="page" id="page-clau" style="max-width:1300px">
-    <h1>GDCBS — Clausura</h1>
-    <p class="subtitle">Registo de presenças · Clausura</p>
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:4px">
+      <span id="gdcbs-clausura-logo" style="display:inline-flex;width:44px;height:50px;flex-shrink:0"></span>
+      <div>
+        <h1 style="margin-bottom:0">GDCBS — Clausura</h1>
+        <p class="subtitle" style="margin-bottom:0">Registo de presenças · Clausura</p>
+      </div>
+    </div>
 
     <div id="clau-layout" style="display:grid;grid-template-columns:1fr 420px;gap:16px;align-items:start">
 
@@ -5226,6 +5239,68 @@ function renderReunioes(){
 }
 
 document.getElementById('reun-modal').addEventListener('click',function(e){if(e.target===this)closeReuniaoModal();});
+
+// ── GDCBS LOGO SVG ──────────────────────────────────────────
+const GDCBS_LOGO_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 112" role="img" aria-label="GDCBS Logo">
+  <!-- Shield shape -->
+  <path d="M50 4 L94 22 L94 62 Q94 90 50 108 Q6 90 6 62 L6 22 Z" fill="#1a3d1a" stroke="#0f2a0f" stroke-width="2"/>
+  <path d="M50 10 L88 26 L88 62 Q88 87 50 103 Q12 87 12 62 L12 26 Z" fill="#f5f0e8" stroke="none"/>
+  <!-- Inner border -->
+  <path d="M50 14 L84 28 L84 62 Q84 84 50 99 Q16 84 16 62 L16 28 Z" fill="none" stroke="#1a3d1a" stroke-width="1.5"/>
+  <!-- Football -->
+  <circle cx="50" cy="68" r="18" fill="#1a3d1a" stroke="#0f2a0f" stroke-width="1"/>
+  <circle cx="50" cy="68" r="18" fill="none" stroke="#f5f0e8" stroke-width="0.5"/>
+  <!-- Ball pentagon pattern -->
+  <polygon points="50,56 56,61 54,68 46,68 44,61" fill="#f5f0e8"/>
+  <polygon points="38,63 44,61 46,68 41,73 35,70" fill="#f5f0e8"/>
+  <polygon points="62,63 56,61 54,68 59,73 65,70" fill="#f5f0e8"/>
+  <!-- Laurel left -->
+  <g fill="#1a3d1a" stroke="none">
+    <ellipse cx="24" cy="76" rx="5" ry="3" transform="rotate(-40,24,76)"/>
+    <ellipse cx="19" cy="82" rx="5" ry="3" transform="rotate(-55,19,82)"/>
+    <ellipse cx="16" cy="89" rx="5" ry="3" transform="rotate(-65,16,89)"/>
+    <ellipse cx="15" cy="96" rx="4" ry="2.5" transform="rotate(-75,15,96)"/>
+  </g>
+  <!-- Laurel right -->
+  <g fill="#1a3d1a" stroke="none">
+    <ellipse cx="76" cy="76" rx="5" ry="3" transform="rotate(40,76,76)"/>
+    <ellipse cx="81" cy="82" rx="5" ry="3" transform="rotate(55,81,82)"/>
+    <ellipse cx="84" cy="89" rx="5" ry="3" transform="rotate(65,84,89)"/>
+    <ellipse cx="85" cy="96" rx="4" ry="2.5" transform="rotate(75,85,96)"/>
+  </g>
+  <!-- Anchor at bottom -->
+  <text x="50" y="107" text-anchor="middle" font-size="8" fill="#f5f0e8">⚓</text>
+  <!-- Text: 1998 -->
+  <text x="50" y="26" text-anchor="middle" font-family="serif" font-size="7" font-weight="bold" fill="#1a3d1a" letter-spacing="2">1998</text>
+  <!-- Text: GDCBS -->
+  <text x="50" y="48" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="900" fill="#1a3d1a" letter-spacing="0.5">GDCBS</text>
+  <!-- Decorative lines around 1998 -->
+  <line x1="30" y1="23" x2="38" y2="23" stroke="#1a3d1a" stroke-width="0.8"/>
+  <line x1="62" y1="23" x2="70" y2="23" stroke="#1a3d1a" stroke-width="0.8"/>
+</svg>`;
+
+function gdcbsLogo(size){
+  return `<span class="gdcbs-logo" style="width:${size}px;height:${size*1.12}px;display:inline-flex;align-items:center">${GDCBS_LOGO_SVG}</span>`;
+}
+
+// Inject logos into all GDCBS placeholders
+(function injectGdcbsLogos(){
+  const targets = [
+    {id:'nav-gdcbs-logo',     size:18},
+    {id:'home-gdcbs-logo',    size:36},
+    {id:'gdcbs-menu-logo',    size:140},
+    {id:'gdcbs-abertura-logo',size:44},
+    {id:'gdcbs-clausura-logo',size:44},
+  ];
+  function doInject(){
+    targets.forEach(({id,size})=>{
+      const el=document.getElementById(id);
+      if(el) el.innerHTML=`<span style="width:${size}px;height:${Math.round(size*1.12)}px;display:inline-flex;align-items:center">${GDCBS_LOGO_SVG}</span>`;
+    });
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',doInject);
+  else doInject();
+})();
 
 // ── STARTUP ─────────────────────────────────────────────────
 function showLogin(){
