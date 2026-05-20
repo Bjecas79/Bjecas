@@ -3237,18 +3237,20 @@ function renderFerias(){
   }
   document.getElementById('ferias-cal').innerHTML=html;
 
-  // Totais do ano inteiro — combina dias manuais e períodos
+  // Totais do ano selecionado — combina dias manuais e períodos
   const allDayTypes = {};
-  // Manuais
+  // Manuais (apenas do ano atual)
   Object.entries(feriasData).forEach(([mk, mv]) => {
     const [y,m] = mk.split('-').map(Number);
+    if(y !== feriasYear) return;
     Object.entries(mv).forEach(([d,t]) => {
       const k = y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
       allDayTypes[k] = t;
     });
   });
-  // Períodos (não sobrepõe manual)
+  // Períodos (apenas do ano atual, não sobrepõe manual)
   Object.entries(periodosMap).forEach(([k,v]) => {
+    if(parseInt(k.split('-')[0]) !== feriasYear) return;
     if(!allDayTypes[k]) allDayTypes[k] = v.tipo;
   });
   let cFerias=0, cFolga=0, cFeriado=0;
@@ -3262,9 +3264,11 @@ function renderFerias(){
   document.getElementById('f-feriado').textContent=cFeriado;
   document.getElementById('f-total').textContent=cFerias+cFolga+cFeriado;
 
-  // Painel resumo — lista de períodos (todos os anos), ordenados por data
+  // Painel resumo — lista de períodos do ano atual, ordenados por data
   const resumoEl = document.getElementById('ferias-resumo-list');
-  const sorted = [...feriasPeriodos].sort((a,b) => a.inicio.localeCompare(b.inicio));
+  const sorted = [...feriasPeriodos]
+    .filter(p => new Date(p.inicio+'T00:00:00').getFullYear() === feriasYear)
+    .sort((a,b) => a.inicio.localeCompare(b.inicio));
   const totalDias = Object.keys(periodosMap).length + Object.values(feriasData).reduce((a,m)=>a+Object.keys(m).length,0);
 
   if(!sorted.length && !Object.keys(allDayTypes).length){
