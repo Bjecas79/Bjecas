@@ -690,7 +690,12 @@ td.muted{color:var(--muted)}
       <div class="card" style="padding:0;overflow:hidden">
         <div style="padding:14px 16px 10px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
           <div style="font-size:13px;font-weight:600">🏆 Classificação</div>
-          <div id="gb-jornada-tag" style="font-size:11px;color:var(--muted);font-family:'DM Mono',monospace"></div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <div id="gb-jornada-tag" style="font-size:11px;color:var(--muted);font-family:'DM Mono',monospace"></div>
+            <button class="btn sm" id="gb-export-btn" onclick="exportGdcbsStandingsPDF()" style="font-size:11px;padding:4px 10px">
+              <i class="ti ti-file-type-pdf" style="font-size:13px;color:#d63b3b"></i> Exportar
+            </button>
+          </div>
         </div>
         <table style="width:100%;border-collapse:collapse;font-size:12px">
           <thead>
@@ -772,7 +777,12 @@ td.muted{color:var(--muted)}
       <div class="card" style="padding:0;overflow:hidden">
         <div style="padding:14px 16px 10px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
           <div style="font-size:13px;font-weight:600">🏆 Classificação</div>
-          <div id="clau-jornada-tag" style="font-size:11px;color:var(--muted);font-family:'DM Mono',monospace"></div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <div id="clau-jornada-tag" style="font-size:11px;color:var(--muted);font-family:'DM Mono',monospace"></div>
+            <button class="btn sm" id="clau-export-btn" onclick="exportClauStandingsPDF()" style="font-size:11px;padding:4px 10px">
+              <i class="ti ti-file-type-pdf" style="font-size:13px;color:#d63b3b"></i> Exportar
+            </button>
+          </div>
         </div>
         <table style="width:100%;border-collapse:collapse;font-size:12px">
           <thead>
@@ -4592,6 +4602,176 @@ async function exportSofiaPDF(){
   } catch(err) {
     console.error('exportSofiaPDF:', err);
     alert('Erro ao gerar PDF: ' + err.message);
+  } finally {
+    btn.innerHTML = origHtml;
+    btn.disabled = false;
+  }
+}
+
+// ── EXPORT CLASSIFICAÇÃO GDCBS ABERTURA ─────────────────────
+async function exportGdcbsStandingsPDF(){
+  const btn = document.getElementById('gb-export-btn');
+  const origHtml = btn.innerHTML;
+  btn.innerHTML = '<i class="ti ti-loader" style="font-size:13px;animation:spin 1s linear infinite"></i> A gerar…';
+  btn.disabled = true;
+  try {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
+    const result = buildStandings();
+    const numJornadas = result ? result.numJornadas : 0;
+    const standings = result ? result.standings : [];
+    const year = new Date().getFullYear();
+    const PAGE_W=210, ML=16, MR=16, MT=18, CONTENT_W=210-ML-MR;
+    const C = { accent:[91,82,214], muted:[139,144,168], text:[26,29,46], border:[226,229,239], gold:[184,134,11], silver:[136,136,136], bronze:[160,80,48], bg3:[238,240,246] };
+
+    // Cabeçalho
+    doc.setFillColor(...C.accent);
+    doc.rect(0,0,PAGE_W,22,'F');
+    doc.setFont('helvetica','bold'); doc.setFontSize(14); doc.setTextColor(255,255,255);
+    doc.text('GDCBS — Abertura', ML, 13);
+    doc.setFont('helvetica','normal'); doc.setFontSize(8);
+    doc.text('Classificação · '+numJornadas+(numJornadas===1?'ª jornada':' jornadas')+' · '+year, ML, 18.5);
+    doc.setFontSize(8); doc.text(new Date().toLocaleDateString('pt-PT'), PAGE_W-MR, 18.5, {align:'right'});
+
+    let y = MT + 14;
+
+    if(standings.length === 0){
+      doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.setTextColor(...C.muted);
+      doc.text('Sem jornadas registadas.', ML, y+8);
+    } else {
+      const cols = [{label:'#',w:14},{label:'Jogador',w:60},{label:'J',w:16},{label:'V',w:16},{label:'E',w:16},{label:'D',w:16},{label:'G',w:16},{label:'Pts',w:CONTENT_W-154}];
+      // Cabeçalho tabela
+      doc.setFillColor(...C.bg3);
+      doc.rect(ML,y,CONTENT_W,7,'F');
+      let cx=ML;
+      cols.forEach(col=>{
+        doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(...C.muted);
+        doc.text(col.label.toUpperCase(), col.label==='#'||col.label==='Pts'||col.label==='J'||col.label==='V'||col.label==='E'||col.label==='D'||col.label==='G' ? cx+col.w/2 : cx+2, y+4.8, col.label==='#'||col.label==='Pts'||col.label==='J'||col.label==='V'||col.label==='E'||col.label==='D'||col.label==='G'?{align:'center'}:{});
+        cx+=col.w;
+      });
+      y+=7;
+      const medalhas=['🥇','🥈','🥉'];
+      standings.forEach((s,i)=>{
+        const pos=i+1;
+        const rowBgs = pos===1?[255,250,220]:pos===2?[245,245,245]:pos===3?[252,242,236]:[255,255,255];
+        doc.setFillColor(...rowBgs); doc.rect(ML,y,CONTENT_W,8,'F');
+        cx=ML;
+        // Pos
+        const posColor = pos===1?C.gold:pos===2?C.silver:pos===3?C.bronze:C.muted;
+        doc.setFont('helvetica','bold'); doc.setFontSize(pos<=3?9:8); doc.setTextColor(...posColor);
+        doc.text(pos<=3?String(pos):String(pos), cx+cols[0].w/2, y+5.5, {align:'center'});
+        cx+=cols[0].w;
+        // Nome
+        doc.setFont('helvetica',pos<=3?'bold':'normal'); doc.setFontSize(8); doc.setTextColor(...C.text);
+        const nomeTxt = doc.splitTextToSize(s.nome, cols[1].w-3)[0]||'';
+        doc.text(nomeTxt, cx+2, y+5.5);
+        cx+=cols[1].w;
+        // J V E D G
+        [[s.j,C.muted],[s.v,[26,125,122]],[s.e,[212,130,10]],[s.d,[214,59,59]],[s.g,C.muted]].forEach(([val,color],vi)=>{
+          doc.setFont('helvetica',vi===1?'bold':'normal'); doc.setFontSize(8); doc.setTextColor(...color);
+          doc.text(String(val), cx+cols[2+vi].w/2, y+5.5, {align:'center'});
+          cx+=cols[2+vi].w;
+        });
+        // Pts
+        doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...C.accent);
+        doc.text(String(s.pts), cx+cols[7].w/2, y+5.5, {align:'center'});
+        // Linha separadora
+        doc.setDrawColor(...C.border); doc.setLineWidth(0.2);
+        doc.line(ML,y+8,ML+CONTENT_W,y+8);
+        y+=8;
+      });
+    }
+
+    // Rodapé
+    doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(...C.muted);
+    doc.text('Cenas do Bjecas · GDCBS Abertura · '+year, ML, 287);
+    doc.text('Gerado em '+new Date().toLocaleDateString('pt-PT'), PAGE_W-MR, 287, {align:'right'});
+
+    doc.save('GDCBS_Abertura_Classificacao_'+year+'.pdf');
+  } catch(err){
+    console.error('exportGdcbsStandingsPDF:', err);
+    alert('Erro ao gerar PDF: '+err.message);
+  } finally {
+    btn.innerHTML = origHtml;
+    btn.disabled = false;
+  }
+}
+
+// ── EXPORT CLASSIFICAÇÃO GDCBS CLAUSURA ─────────────────────
+async function exportClauStandingsPDF(){
+  const btn = document.getElementById('clau-export-btn');
+  const origHtml = btn.innerHTML;
+  btn.innerHTML = '<i class="ti ti-loader" style="font-size:13px;animation:spin 1s linear infinite"></i> A gerar…';
+  btn.disabled = true;
+  try {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
+    const result = buildClauStandings();
+    const numJornadas = result ? result.numJornadas : 0;
+    const standings = result ? result.standings : [];
+    const year = new Date().getFullYear();
+    const PAGE_W=210, ML=16, MR=16, MT=18, CONTENT_W=210-ML-MR;
+    const C = { accent:[91,82,214], muted:[139,144,168], text:[26,29,46], border:[226,229,239], gold:[184,134,11], silver:[136,136,136], bronze:[160,80,48], bg3:[238,240,246] };
+
+    // Cabeçalho
+    doc.setFillColor(...C.accent);
+    doc.rect(0,0,PAGE_W,22,'F');
+    doc.setFont('helvetica','bold'); doc.setFontSize(14); doc.setTextColor(255,255,255);
+    doc.text('GDCBS — Clausura', ML, 13);
+    doc.setFont('helvetica','normal'); doc.setFontSize(8);
+    doc.text('Classificação · '+numJornadas+(numJornadas===1?'ª jornada':' jornadas')+' · '+year, ML, 18.5);
+    doc.setFontSize(8); doc.text(new Date().toLocaleDateString('pt-PT'), PAGE_W-MR, 18.5, {align:'right'});
+
+    let y = MT + 14;
+
+    if(standings.length === 0){
+      doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.setTextColor(...C.muted);
+      doc.text('Sem jornadas registadas.', ML, y+8);
+    } else {
+      const cols = [{label:'#',w:14},{label:'Jogador',w:60},{label:'J',w:16},{label:'V',w:16},{label:'E',w:16},{label:'D',w:16},{label:'G',w:16},{label:'Pts',w:CONTENT_W-154}];
+      doc.setFillColor(...C.bg3);
+      doc.rect(ML,y,CONTENT_W,7,'F');
+      let cx=ML;
+      cols.forEach(col=>{
+        doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(...C.muted);
+        doc.text(col.label.toUpperCase(), col.label==='#'||col.label==='Pts'||col.label==='J'||col.label==='V'||col.label==='E'||col.label==='D'||col.label==='G' ? cx+col.w/2 : cx+2, y+4.8, col.label==='#'||col.label==='Pts'||col.label==='J'||col.label==='V'||col.label==='E'||col.label==='D'||col.label==='G'?{align:'center'}:{});
+        cx+=col.w;
+      });
+      y+=7;
+      standings.forEach((s,i)=>{
+        const pos=i+1;
+        const rowBgs = pos===1?[255,250,220]:pos===2?[245,245,245]:pos===3?[252,242,236]:[255,255,255];
+        doc.setFillColor(...rowBgs); doc.rect(ML,y,CONTENT_W,8,'F');
+        cx=ML;
+        const posColor = pos===1?C.gold:pos===2?C.silver:pos===3?C.bronze:C.muted;
+        doc.setFont('helvetica','bold'); doc.setFontSize(pos<=3?9:8); doc.setTextColor(...posColor);
+        doc.text(String(pos), cx+cols[0].w/2, y+5.5, {align:'center'});
+        cx+=cols[0].w;
+        doc.setFont('helvetica',pos<=3?'bold':'normal'); doc.setFontSize(8); doc.setTextColor(...C.text);
+        const nomeTxt = doc.splitTextToSize(s.nome, cols[1].w-3)[0]||'';
+        doc.text(nomeTxt, cx+2, y+5.5);
+        cx+=cols[1].w;
+        [[s.j,C.muted],[s.v,[26,125,122]],[s.e,[212,130,10]],[s.d,[214,59,59]],[s.g,C.muted]].forEach(([val,color],vi)=>{
+          doc.setFont('helvetica',vi===1?'bold':'normal'); doc.setFontSize(8); doc.setTextColor(...color);
+          doc.text(String(val), cx+cols[2+vi].w/2, y+5.5, {align:'center'});
+          cx+=cols[2+vi].w;
+        });
+        doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...C.accent);
+        doc.text(String(s.pts), cx+cols[7].w/2, y+5.5, {align:'center'});
+        doc.setDrawColor(...C.border); doc.setLineWidth(0.2);
+        doc.line(ML,y+8,ML+CONTENT_W,y+8);
+        y+=8;
+      });
+    }
+
+    doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(...C.muted);
+    doc.text('Cenas do Bjecas · GDCBS Clausura · '+year, ML, 287);
+    doc.text('Gerado em '+new Date().toLocaleDateString('pt-PT'), PAGE_W-MR, 287, {align:'right'});
+
+    doc.save('GDCBS_Clausura_Classificacao_'+year+'.pdf');
+  } catch(err){
+    console.error('exportClauStandingsPDF:', err);
+    alert('Erro ao gerar PDF: '+err.message);
   } finally {
     btn.innerHTML = origHtml;
     btn.disabled = false;
