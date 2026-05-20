@@ -292,7 +292,12 @@ td.muted{color:var(--muted)}
 <aside class="sidebar" id="sidebar">
   <div class="sidebar-logo"><div class="sidebar-logo-text"><span class="sidebar-logo-cenas">CENAS do</span><span class="sidebar-logo-bjecas">Bjecas</span></div></div>
 
-  <button class="nav-item" onclick="goto('gym',this)"><i class="ti ti-barbell"></i> ProAventuras</button>
+  <button class="nav-item" onclick="goto('gym',this)"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 100 100" role="img" aria-label="PRO Health and Fitness">
+  <circle cx="50" cy="50" r="48" fill="#2d4057"/>
+  <circle cx="50" cy="50" r="43" fill="none" stroke="#ffffff" stroke-width="1.2" opacity="0.7"/>
+  <text x="50" y="52" text-anchor="middle" font-family="Georgia,serif" font-size="30" font-weight="700" fill="#ffffff" letter-spacing="1">PRO</text>
+  <text x="50" y="66" text-anchor="middle" font-family="Georgia,serif" font-size="9" font-weight="400" fill="#ffffff" letter-spacing="0.5">Health &amp; Fitness</text>
+</svg> ProAventuras</button>
   <button class="nav-item" onclick="goto('treino',this)"><i class="ti ti-run"></i> Treino &amp; Atividade</button>
   <button class="nav-item" onclick="goto('sofia',this)"><i class="ti ti-heart"></i> Sofia</button>
   <button class="nav-item" id="nav-gdcbs-main" onclick="toggleGdcbsNav(event)"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="20" viewBox="0 0 100 112" role="img" aria-label="GDCBS Logo">
@@ -409,7 +414,12 @@ td.muted{color:var(--muted)}
       <div style="font-size:52px;font-weight:700;letter-spacing:-.02em;font-family:'Dancing Script',cursive;line-height:.95;color:var(--accent)">Bjecas</div>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-      <button class="home-btn" onclick="gotoHome('gym')"><span class="home-btn-icon">🏋️</span><span>ProAventuras</span></button>
+      <button class="home-btn" onclick="gotoHome('gym')"><svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 100 100" role="img" aria-label="PRO Health and Fitness">
+  <circle cx="50" cy="50" r="48" fill="#2d4057"/>
+  <circle cx="50" cy="50" r="43" fill="none" stroke="#ffffff" stroke-width="1.2" opacity="0.7"/>
+  <text x="50" y="52" text-anchor="middle" font-family="Georgia,serif" font-size="30" font-weight="700" fill="#ffffff" letter-spacing="1">PRO</text>
+  <text x="50" y="66" text-anchor="middle" font-family="Georgia,serif" font-size="9" font-weight="400" fill="#ffffff" letter-spacing="0.5">Health &amp; Fitness</text>
+</svg><span>ProAventuras</span></button>
       <button class="home-btn" onclick="gotoHome('treino')"><span class="home-btn-icon">🏃</span><span>Treino &amp; Atividade</span></button>
       <button class="home-btn" onclick="gotoHome('sofia')"><span class="home-btn-icon">❤️</span><span>Sofia</span></button>
       <button class="home-btn" onclick="gotoHome('gdcbs-menu')"><svg xmlns="http://www.w3.org/2000/svg" width="36" height="40" viewBox="0 0 100 112" role="img" aria-label="GDCBS Logo">
@@ -492,9 +502,17 @@ td.muted{color:var(--muted)}
 
   <div class="page" id="page-gym" style="max-width:1300px">
     <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:4px;gap:12px">
-      <div>
-        <h1 style="margin-bottom:0">ProAventuras</h1>
-        <p class="subtitle" style="margin-bottom:0">Registo de presença mensal</p>
+      <div style="display:flex;align-items:center;gap:12px">
+        <svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 100 100" role="img" aria-label="PRO Health and Fitness">
+  <circle cx="50" cy="50" r="48" fill="#2d4057"/>
+  <circle cx="50" cy="50" r="43" fill="none" stroke="#ffffff" stroke-width="1.2" opacity="0.7"/>
+  <text x="50" y="52" text-anchor="middle" font-family="Georgia,serif" font-size="30" font-weight="700" fill="#ffffff" letter-spacing="1">PRO</text>
+  <text x="50" y="66" text-anchor="middle" font-family="Georgia,serif" font-size="9" font-weight="400" fill="#ffffff" letter-spacing="0.5">Health &amp; Fitness</text>
+</svg>
+        <div>
+          <h1 style="margin-bottom:0">ProAventuras</h1>
+          <p class="subtitle" style="margin-bottom:0">Registo de presença mensal</p>
+        </div>
       </div>
       <button class="btn" onclick="exportGymPDF()" id="gym-pdf-btn" style="flex-shrink:0;margin-top:4px">
         <i class="ti ti-file-type-pdf" style="font-size:15px;color:#d63b3b"></i> Exportar PDF
