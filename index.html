@@ -303,6 +303,8 @@ td.muted{color:var(--muted)}
 
   <div class="sidebar-spacer"></div>
 
+  <button class="nav-item" id="sync-btn" onclick="syncFromCloud()" style="color:var(--accent);font-weight:600;border:1px solid var(--accent);border-radius:9px;margin-bottom:8px"><i class="ti ti-refresh" id="sync-icon" style="font-size:15px"></i> Sincronizar</button>
+
   <div class="sidebar-settings">
     <button class="nav-item" onclick="openYearModal()"><i class="ti ti-calendar"></i> Ano <span id="sidebar-year-label" style="margin-left:4px;font-family:'DM Mono',monospace;font-size:11px;opacity:.6"></span></button>
     <button class="nav-item" onclick="openSettings()"><i class="ti ti-settings"></i> Definições</button>
@@ -3922,6 +3924,52 @@ async function doLogout(){
 }
 
 // ── BOOT ────────────────────────────────────────────────────
+async function syncFromCloud(){
+  const icon = document.getElementById('sync-icon');
+  const btn = document.getElementById('sync-btn');
+  btn.disabled = true;
+  icon.style.animation = 'spin 1s linear infinite';
+  if(!document.getElementById('spin-style')){
+    const s = document.createElement('style');
+    s.id = 'spin-style';
+    s.textContent = '@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}';
+    document.head.appendChild(s);
+  }
+  try {
+    await S.loadFromCloud();
+    const asArray = v => Array.isArray(v) ? v : (v && typeof v === 'object' ? Object.values(v) : []);
+    const asObj   = v => (v && typeof v === 'object' && !Array.isArray(v)) ? v : {};
+    gymData      = asObj(S.get('gym_'+gymYear));
+    treinoData   = asObj(S.get('treino_'+treinoYear));
+    gymConfig    = asObj(S.get('gymConfig')); if(!gymConfig.hora) gymConfig={hora:0,aula:0};
+    gdcbsData    = asObj(S.get('gdcbs_'+gdcbsYear));
+    gdcbsConfig  = asObj(S.get('gdcbsConfig')); if(!gdcbsConfig.hora) gdcbsConfig={hora:0,aula:0};
+    sofiaData    = asObj(S.get('sofia_'+sofiaYear));
+    dividas      = asArray(S.get('dividas'));
+    dividaHist   = asArray(S.get('dividaHist'));
+    contas       = asArray(S.get('contas'));
+    feriasData   = asObj(S.get('ferias_'+feriasYear));
+    feriasPeriodos = asArray(S.get('feriasPeriodos'));
+    feriasDetalhes = asObj(S.get('feriasDetalhes'));
+    comprasData  = asArray(S.get('compras'));
+    clauData     = asObj(S.get('clau_'+clauYear));
+    partilhaData = asObj(S.get('partilha_'+partilhaYear));
+    planosList   = asArray(S.get('planosList'));
+    renderGym();renderTreino();renderGdcbs();renderClau();renderSofia();renderPartilha();renderDividas();renderContas();renderFerias();renderCompras();initPlanoUI();
+    // Feedback
+    const flash = document.createElement('div');
+    flash.textContent = '✓ Dados sincronizados!';
+    flash.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--accent2);color:#fff;padding:10px 22px;border-radius:10px;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,.2)';
+    document.body.appendChild(flash);
+    setTimeout(()=>flash.remove(), 2500);
+  } catch(e) {
+    alert('Erro ao sincronizar: '+e.message);
+  } finally {
+    icon.style.animation = '';
+    btn.disabled = false;
+  }
+}
+
 async function bootApp(){
   // Show sync spinner
   document.getElementById('login-form-wrap').style.display='none';
