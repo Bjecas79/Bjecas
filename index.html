@@ -328,7 +328,7 @@ td.muted{color:var(--muted)}
       <div style="font-size:15px;font-weight:600;margin-bottom:4px">Definir Ano</div>
       <div style="font-size:12px;color:var(--muted);margin-bottom:20px">Altera o ano em todos os separadores</div>
       <div style="margin-bottom:20px">
-        <input type="number" id="year-input" min="2020" max="2099" step="1"
+        <input type="number" id="year-input" min="2011" max="2099" step="1"
           style="width:100%;padding:18px 12px;border-radius:14px;border:2px solid var(--accent);background:var(--bg3);color:var(--text);font-size:48px;font-family:'DM Mono',monospace;box-sizing:border-box;text-align:center;font-weight:700;letter-spacing:4px">
       </div>
       <div style="display:flex;gap:10px">
@@ -1358,9 +1358,18 @@ async function authRefresh(refresh_token){
 }
 
 // Chaves que são sincronizadas com o Supabase (tabela: user_data)
-const CLOUD_KEYS = ['gym','gymConfig','treino','gdcbs','gdcbsConfig','sofia','sofiaAcumulado',
-                    'dividas','dividaHist','contas','ferias','feriasPeriodos',
-                    'feriasDetalhes','tripData','compras','cpProdutos','clau','clauConfig','partilha'];
+// Gera as chaves cloud incluindo variantes por ano (2024-2030)
+function buildCloudKeys(){
+  const base = ['gymConfig','gdcbsConfig','sofiaAcumulado','dividas','dividaHist','contas',
+                 'feriasPeriodos','feriasDetalhes','tripData','compras','cpProdutos','clauConfig','planosList'];
+  const byYear = ['gym','treino','gdcbs','sofia','partilha','ferias','clau'];
+  const keys = [...base];
+  for(let y=2011; y<=2099; y++){
+    byYear.forEach(k => keys.push(k+'_'+y));
+  }
+  return keys;
+}
+const CLOUD_KEYS = buildCloudKeys();
 
 // Estende o objeto S com loadFromCloud e saveToCloud
 Object.assign(S, {
@@ -2693,7 +2702,7 @@ function renderSofia(){
   document.getElementById('s-num').textContent=numTotal;
   // Acumulado real: soma de todos os anos guardados
   let acumuladoReal = 0;
-  for(let y=2020; y<=new Date().getFullYear()+1; y++){
+  for(let y=2011; y<=2099; y++){
     const yd = S.get('sofia_'+y) || {};
     Object.values(yd).forEach(m=>{ if(m && typeof m==='object') Object.values(m).forEach(arr=>{ if(Array.isArray(arr)) arr.forEach(e=>{ acumuladoReal += (e.val||0); }); }); });
   }
@@ -3130,7 +3139,7 @@ function closeYearModal(){
 }
 function saveYear(){
   const y = parseInt(document.getElementById('year-input').value);
-  if(!y||y<2020||y>2099) return;
+  if(!y||y<2011||y>2099) return;
 
   // Guardar dados do ano atual antes de mudar
   S.set('treino_'+treinoYear, treinoData);
@@ -3823,11 +3832,11 @@ function importarDados(event){
       if(imported === 0) throw new Error('Nenhum dado reconhecido');
       // Recarrega todas as variáveis em memória
       const asArray = v => Array.isArray(v) ? v : (v && typeof v === 'object' ? Object.values(v) : []);
-      gymData = S.get('gym')||{};
+      gymData = S.get('gym_'+gymYear)||{};
       treinoData = S.get('treino_'+treinoYear)||{};
       gymConfig = S.get('gymConfig')||{hora:0,aula:0};
-      gdcbsData = S.get('gdcbs')||{};
-      sofiaData = S.get('sofia')||{};
+      gdcbsData = S.get('gdcbs_'+gdcbsYear)||{};
+      sofiaData = S.get('sofia_'+sofiaYear)||{};
       sofiaAcumulado = S.get('sofiaAcumulado')||0;
       dividas = asArray(S.get('dividas'));
       dividaHist = asArray(S.get('dividaHist'));
@@ -3836,7 +3845,8 @@ function importarDados(event){
       feriasPeriodos = asArray(S.get('feriasPeriodos'));
       feriasDetalhes = S.get('feriasDetalhes')||{};
       comprasData = asArray(S.get('compras'));
-      partilhaData = S.get('partilha')||{};
+      clauData = S.get('clau_'+clauYear)||{};
+      partilhaData = S.get('partilha_'+partilhaYear)||{};
       planosList = asArray(S.get('planosList'));
       // Re-renderiza tudo
       renderGym();renderTreino();renderGdcbs();renderClau();renderSofia();renderPartilha();renderDividas();renderContas();renderFerias();renderCompras();initPlanoUI();
@@ -3920,22 +3930,22 @@ async function bootApp(){
   const asArray = v => Array.isArray(v) ? v : (v && typeof v === 'object' ? Object.values(v) : []);
   const asObj   = v => (v && typeof v === 'object' && !Array.isArray(v)) ? v : {};
 
-  gymData     = asObj(S.get('gym'));
+  gymData     = asObj(S.get('gym_'+gymYear));
   treinoData  = asObj(S.get('treino_'+treinoYear));
   gymConfig   = asObj(S.get('gymConfig')); if(!gymConfig.hora) gymConfig={hora:0,aula:0};
-  gdcbsData   = asObj(S.get('gdcbs'));
+  gdcbsData   = asObj(S.get('gdcbs_'+gdcbsYear));
   gdcbsConfig = asObj(S.get('gdcbsConfig')); if(!gdcbsConfig.hora) gdcbsConfig={hora:0,aula:0};
-  sofiaData   = asObj(S.get('sofia'));
+  sofiaData   = asObj(S.get('sofia_'+sofiaYear));
   sofiaAcumulado = S.get('sofiaAcumulado') || 0;
   dividas     = asArray(S.get('dividas'));
   dividaHist  = asArray(S.get('dividaHist'));
   contas      = asArray(S.get('contas'));
-  feriasData  = asObj(S.get('ferias'));
+  feriasData  = asObj(S.get('ferias_'+feriasYear));
   feriasPeriodos = asArray(S.get('feriasPeriodos'));
   feriasDetalhes = asObj(S.get('feriasDetalhes'));
   comprasData = asArray(S.get('compras'));
-  clauData    = asObj(S.get('clau'));
-  partilhaData = asObj(S.get('partilha'));
+  clauData    = asObj(S.get('clau_'+clauYear));
+  partilhaData = asObj(S.get('partilha_'+partilhaYear));
   planosList = asArray(S.get('planosList'));
 
   // Show user email in sidebar
