@@ -352,6 +352,8 @@ td.muted{color:var(--muted)}
   <button class="nav-item" onclick="goto('ferias',this)"><img class="ferias-icon-img" width="18" height="18" style="object-fit:contain;flex-shrink:0" alt=""> Férias / Folgas</button>
   <button class="nav-item" onclick="goto('compras',this)"><img class="compras-icon-img" width="18" height="18" style="object-fit:contain;flex-shrink:0" alt=""> Lista de Compras</button>
   <button class="nav-item" onclick="goto('todo',this)"><i class="ti ti-checkbox"></i> TO DO List</button>
+  <button class="nav-item" onclick="goto('fbts',this)"><i class="ti ti-school"></i> Aulas FBTS</button>
+  <button class="nav-item" onclick="goto('pensamentos',this)"><i class="ti ti-bulb"></i> Pensamentos Soltos</button>
   <button class="nav-item" onclick="goto('reunioes',this)"><i class="ti ti-calendar-event"></i> Reuniões e Cenas</button>
 
   <div class="sidebar-spacer"></div>
@@ -470,6 +472,8 @@ td.muted{color:var(--muted)}
       <button class="home-btn" onclick="gotoHome('ferias')"><img class="ferias-icon-img" width="84" height="84" style="object-fit:contain;flex-shrink:0" alt=""><span>Férias / Folgas</span></button>
       <button class="home-btn" onclick="gotoHome('compras')"><img class="compras-icon-img" width="76" height="76" style="object-fit:contain;flex-shrink:0" alt=""><span>Lista de Compras</span></button>
       <button class="home-btn" onclick="gotoHome('todo')"><span class="home-btn-icon">✅</span><span>TO DO List</span></button>
+      <button class="home-btn" onclick="gotoHome('fbts')"><span class="home-btn-icon">🎓</span><span>Aulas FBTS</span></button>
+      <button class="home-btn" onclick="gotoHome('pensamentos')"><span class="home-btn-icon">💭</span><span>Pensamentos Soltos</span></button>
       <button class="home-btn" onclick="gotoHome('reunioes')"><span class="home-btn-icon">📅</span><span>Reuniões e Cenas</span></button>
     </div>
     <div style="margin-top:20px;display:flex;justify-content:center">
@@ -1562,8 +1566,134 @@ td.muted{color:var(--muted)}
   </div>
 
   <!-- ══════════════════════════════════════════════════════════ -->
-  <!-- REUNIÕES E CENAS                                           -->
+  <!-- AULAS FBTS                                                  -->
   <!-- ══════════════════════════════════════════════════════════ -->
+  <div class="page" id="page-fbts" style="max-width:860px">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:4px;gap:12px">
+      <div style="display:flex;align-items:center;gap:12px">
+        <span style="font-size:44px;line-height:1;flex-shrink:0">🎓</span>
+        <div>
+          <h1 style="margin-bottom:0">Aulas FBTS</h1>
+          <p class="subtitle" style="margin-bottom:0">Gestão de aulas e tarefas FBTS</p>
+        </div>
+      </div>
+    </div>
+    <div style="margin-bottom:20px"></div>
+
+    <!-- Form nova tarefa -->
+    <div class="card" style="margin-bottom:20px">
+      <div style="font-size:13px;font-weight:600;margin-bottom:12px">Nova aula / tarefa</div>
+      <div class="form-row">
+        <input type="text" id="fbts-titulo" placeholder="Título da aula ou tarefa" style="flex:2;min-width:160px">
+        <button class="btn primary" onclick="addFbts()"><i class="ti ti-plus"></i> Adicionar</button>
+      </div>
+      <div class="form-row" style="margin-bottom:0">
+        <input type="text" id="fbts-desc" placeholder="Descrição (opcional)" style="flex:1">
+      </div>
+    </div>
+
+    <!-- Lista de tarefas -->
+    <div id="fbts-list"></div>
+  </div>
+
+  <!-- MODAL: Ver / Editar tarefa FBTS -->
+  <div id="fbts-edit-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:999;align-items:center;justify-content:center;padding:16px">
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:24px;width:600px;max-width:95vw;max-height:90vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,.15);display:flex;flex-direction:column;gap:0">
+      <!-- Header -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+        <div style="font-size:15px;font-weight:600">🎓 Aula / Tarefa</div>
+        <button onclick="closeFbtsEditModal()" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:20px;line-height:1;padding:2px 6px">&times;</button>
+      </div>
+      <input type="hidden" id="fbts-edit-id">
+      <!-- Título -->
+      <div style="margin-bottom:14px">
+        <label style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:6px">Título</label>
+        <input type="text" id="fbts-edit-titulo" style="width:100%;background:var(--bg3);border:1px solid var(--border);color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;padding:10px 12px;border-radius:8px;outline:none">
+      </div>
+      <!-- Descrição curta -->
+      <div style="margin-bottom:14px">
+        <label style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:6px">Descrição</label>
+        <input type="text" id="fbts-edit-desc" style="width:100%;background:var(--bg3);border:1px solid var(--border);color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;padding:9px 12px;border-radius:8px;outline:none">
+      </div>
+      <!-- Conteúdo / Notas -->
+      <div style="margin-bottom:20px">
+        <label style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:6px">Conteúdo / Notas</label>
+        <textarea id="fbts-edit-conteudo" rows="10" placeholder="Escreve aqui os apontamentos, matéria, notas da aula…" style="width:100%;background:var(--bg3);border:1px solid var(--border);color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;padding:10px 12px;border-radius:8px;outline:none;resize:vertical;line-height:1.6"></textarea>
+      </div>
+      <!-- Botões -->
+      <div style="display:flex;gap:8px">
+        <button class="btn sm danger" onclick="deleteFbts()" style="flex:1"><i class="ti ti-trash"></i> Apagar</button>
+        <button class="btn sm" onclick="closeFbtsEditModal()" style="flex:1">Cancelar</button>
+        <button class="btn sm primary" onclick="saveFbtsEdit()" style="flex:1"><i class="ti ti-device-floppy"></i> Guardar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <!-- PENSAMENTOS SOLTOS                                          -->
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <div class="page" id="page-pensamentos" style="max-width:860px">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:4px;gap:12px">
+      <div style="display:flex;align-items:center;gap:12px">
+        <span style="font-size:44px;line-height:1;flex-shrink:0">💭</span>
+        <div>
+          <h1 style="margin-bottom:0">Pensamentos Soltos</h1>
+          <p class="subtitle" style="margin-bottom:0">Ideias, reflexões e notas livres</p>
+        </div>
+      </div>
+    </div>
+    <div style="margin-bottom:20px"></div>
+
+    <!-- Form novo pensamento -->
+    <div class="card" style="margin-bottom:20px">
+      <div style="font-size:13px;font-weight:600;margin-bottom:12px">Novo pensamento</div>
+      <div class="form-row">
+        <input type="text" id="pens-titulo" placeholder="Título ou ideia" style="flex:2;min-width:160px">
+        <button class="btn primary" onclick="addPensamento()"><i class="ti ti-plus"></i> Adicionar</button>
+      </div>
+      <div class="form-row" style="margin-bottom:0">
+        <input type="text" id="pens-desc" placeholder="Descrição (opcional)" style="flex:1">
+      </div>
+    </div>
+
+    <!-- Lista de pensamentos -->
+    <div id="pens-list"></div>
+  </div>
+
+  <!-- MODAL: Ver / Editar pensamento -->
+  <div id="pens-edit-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:999;align-items:center;justify-content:center;padding:16px">
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:24px;width:600px;max-width:95vw;max-height:90vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,.15);display:flex;flex-direction:column;gap:0">
+      <!-- Header -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+        <div style="font-size:15px;font-weight:600">💭 Pensamento</div>
+        <button onclick="closePensEditModal()" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:20px;line-height:1;padding:2px 6px">&times;</button>
+      </div>
+      <input type="hidden" id="pens-edit-id">
+      <!-- Título -->
+      <div style="margin-bottom:14px">
+        <label style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:6px">Título</label>
+        <input type="text" id="pens-edit-titulo" style="width:100%;background:var(--bg3);border:1px solid var(--border);color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;padding:10px 12px;border-radius:8px;outline:none">
+      </div>
+      <!-- Descrição curta -->
+      <div style="margin-bottom:14px">
+        <label style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:6px">Descrição</label>
+        <input type="text" id="pens-edit-desc" style="width:100%;background:var(--bg3);border:1px solid var(--border);color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;padding:9px 12px;border-radius:8px;outline:none">
+      </div>
+      <!-- Conteúdo / Notas -->
+      <div style="margin-bottom:20px">
+        <label style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:6px">Conteúdo / Notas</label>
+        <textarea id="pens-edit-conteudo" rows="10" placeholder="Escreve aqui os teus pensamentos, ideias, reflexões…" style="width:100%;background:var(--bg3);border:1px solid var(--border);color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;padding:10px 12px;border-radius:8px;outline:none;resize:vertical;line-height:1.6"></textarea>
+      </div>
+      <!-- Botões -->
+      <div style="display:flex;gap:8px">
+        <button class="btn sm danger" onclick="deletePensamento()" style="flex:1"><i class="ti ti-trash"></i> Apagar</button>
+        <button class="btn sm" onclick="closePensEditModal()" style="flex:1">Cancelar</button>
+        <button class="btn sm primary" onclick="savePensEdit()" style="flex:1"><i class="ti ti-device-floppy"></i> Guardar</button>
+      </div>
+    </div>
+  </div>
+
+
   <div class="page" id="page-reunioes" style="max-width:860px">
     <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:4px;gap:12px">
       <div style="display:flex;align-items:center;gap:12px">
@@ -4176,7 +4306,7 @@ function renderDividaChart(){
 
 // ── EXPORT / IMPORT ──────────────────────────────────────
 function exportarDados(){
-  const keys = ['gym','gymConfig','treino','gdcbs','gdcbsConfig','sofia','sofiaAcumulado','dividas','dividaHist','contas','ferias','feriasPeriodos','feriasDetalhes','compras','clau','clauConfig','partilha','todo','reunioes'];
+  const keys = ['gym','gymConfig','treino','gdcbs','gdcbsConfig','sofia','sofiaAcumulado','dividas','dividaHist','contas','ferias','feriasPeriodos','feriasDetalhes','compras','clau','clauConfig','partilha','todo','fbts','pensamentos','reunioes'];
   const data = {};
   keys.forEach(k => { const v = S.get(k); if(v !== null) data[k] = v; });
   data._exportDate = new Date().toISOString();
@@ -4200,7 +4330,7 @@ function importarDados(event){
     try {
       const data = JSON.parse(e.target.result);
       if(!data || typeof data !== 'object') throw new Error('Ficheiro inválido');
-      const keys = ['gym','gymConfig','treino','gdcbs','gdcbsConfig','sofia','sofiaAcumulado','dividas','dividaHist','contas','ferias','feriasPeriodos','feriasDetalhes','compras','clau','clauConfig','partilha','todo','reunioes'];
+      const keys = ['gym','gymConfig','treino','gdcbs','gdcbsConfig','sofia','sofiaAcumulado','dividas','dividaHist','contas','ferias','feriasPeriodos','feriasDetalhes','compras','clau','clauConfig','partilha','todo','fbts','pensamentos','reunioes'];
       let imported = 0;
       keys.forEach(k => { if(data[k] !== undefined){ S.set(k, data[k]); imported++; } });
       if(imported === 0) throw new Error('Nenhum dado reconhecido');
@@ -4223,7 +4353,7 @@ function importarDados(event){
       partilhaData = S.get('partilha_'+partilhaYear)||{};
       planosList = asArray(S.get('planosList'));
       // Re-renderiza tudo
-      renderGym();renderTreino();renderGdcbs();renderClau();renderSofia();renderPartilha();renderDividas();renderContas();renderFerias();renderCompras();initPlanoUI();renderTodo();renderReunioes();
+      renderGym();renderTreino();renderGdcbs();renderClau();renderSofia();renderPartilha();renderDividas();renderContas();renderFerias();renderCompras();initPlanoUI();renderTodo();renderFbts();renderPensamentos();renderReunioes();
       closeSettings();
       // Feedback visual
       const btn = document.querySelector('[onclick="exportarDados()"]');
@@ -4323,7 +4453,7 @@ async function syncFromCloud(){
     clauData     = asObj(S.get('clau_'+clauYear));
     partilhaData = asObj(S.get('partilha_'+partilhaYear));
     planosList   = asArray(S.get('planosList'));
-    renderGym();renderTreino();renderGdcbs();renderClau();renderSofia();renderPartilha();renderDividas();renderContas();renderFerias();renderCompras();initPlanoUI();renderTodo();renderReunioes();
+    renderGym();renderTreino();renderGdcbs();renderClau();renderSofia();renderPartilha();renderDividas();renderContas();renderFerias();renderCompras();initPlanoUI();renderTodo();renderFbts();renderPensamentos();renderReunioes();
     // Feedback
     const flash = document.createElement('div');
     flash.textContent = '✓ Dados sincronizados!';
@@ -4375,7 +4505,7 @@ async function bootApp(){
   // Render
   document.querySelectorAll('input[type=date]').forEach(i=>i.value=now.toISOString().split('T')[0]);
   document.getElementById('sidebar-year-label').textContent = now.getFullYear();
-  renderGym();renderTreino();renderGdcbs();renderClau();renderSofia();renderPartilha();renderDividas();renderContas();renderFerias();renderCompras();initPlanoUI();renderTodo();renderReunioes();
+  renderGym();renderTreino();renderGdcbs();renderClau();renderSofia();renderPartilha();renderDividas();renderContas();renderFerias();renderCompras();initPlanoUI();renderTodo();renderFbts();renderPensamentos();renderReunioes();
 
   // Hide login screen
   document.getElementById('login-screen').style.display='none';
@@ -5238,9 +5368,11 @@ function renderTodo(){
     return;
   }
   list.innerHTML = filtered.map(t=>`
-    <div class="card" style="margin-bottom:10px;opacity:${t.estado==='concluida'?'.6':'1'}">
+    <div class="card" style="margin-bottom:10px;opacity:${t.estado==='concluida'?'.6':'1'};cursor:pointer;transition:box-shadow .15s"
+         onclick="openTodoEditModal(${t.id})"
+         onmouseenter="this.style.boxShadow='0 2px 12px rgba(91,82,214,.12)'" onmouseleave="this.style.boxShadow=''">
       <div style="display:flex;align-items:flex-start;gap:12px">
-        <button onclick="toggleTodoEstado(${t.id})" title="Avançar estado"
+        <button onclick="event.stopPropagation();toggleTodoEstado(${t.id})" title="Avançar estado"
           style="background:${t.estado==='concluida'?'var(--accent2)':t.estado==='progresso'?'var(--warn)':'var(--bg3)'};
                  border:1.5px solid ${t.estado==='concluida'?'var(--accent2)':t.estado==='progresso'?'var(--warn)':'var(--border)'};
                  border-radius:50%;width:26px;height:26px;flex-shrink:0;cursor:pointer;
@@ -5257,7 +5389,7 @@ function renderTodo(){
           ${t.desc?`<div style="font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:4px">${t.desc}</div>`:''}
           <div style="font-size:11px;color:var(--muted)">${t.criadoEm?new Date(t.criadoEm).toLocaleDateString('pt-PT'):''}</div>
         </div>
-        <button class="btn sm" onclick="openTodoEditModal(${t.id})" title="Editar" style="flex-shrink:0">
+        <button class="btn sm" onclick="event.stopPropagation();openTodoEditModal(${t.id})" title="Editar" style="flex-shrink:0">
           <i class="ti ti-pencil" style="font-size:13px"></i>
         </button>
       </div>
@@ -5265,6 +5397,179 @@ function renderTodo(){
 }
 
 document.getElementById('todo-edit-modal').addEventListener('click',function(e){if(e.target===this)closeTodoEditModal();});
+
+// AULAS FBTS
+// ══════════════════════════════════════════════════════════════
+let fbtsData = S.get('fbts') || [];
+function saveFbts(){ S.set('fbts', fbtsData); }
+
+function addFbts(){
+  const titulo = document.getElementById('fbts-titulo').value.trim();
+  const desc   = document.getElementById('fbts-desc').value.trim();
+  if(!titulo) return;
+  fbtsData.unshift({ id: Date.now(), titulo, desc, conteudo: '', criadoEm: new Date().toISOString() });
+  saveFbts();
+  document.getElementById('fbts-titulo').value = '';
+  document.getElementById('fbts-desc').value = '';
+  renderFbts();
+  setTimeout(()=>document.getElementById('fbts-titulo').focus(), 50);
+}
+
+document.addEventListener('keydown', function(e){
+  if(e.key === 'Enter' && document.activeElement && document.activeElement.id === 'fbts-titulo') addFbts();
+});
+
+function openFbtsEditModal(id){
+  const t = fbtsData.find(x=>x.id===id);
+  if(!t) return;
+  document.getElementById('fbts-edit-id').value = id;
+  document.getElementById('fbts-edit-titulo').value = t.titulo;
+  document.getElementById('fbts-edit-desc').value = t.desc || '';
+  document.getElementById('fbts-edit-conteudo').value = t.conteudo || '';
+  document.getElementById('fbts-edit-modal').style.display = 'flex';
+}
+
+function closeFbtsEditModal(){ document.getElementById('fbts-edit-modal').style.display = 'none'; }
+
+function saveFbtsEdit(){
+  const id = parseInt(document.getElementById('fbts-edit-id').value);
+  const t = fbtsData.find(x=>x.id===id);
+  if(!t) return;
+  t.titulo   = document.getElementById('fbts-edit-titulo').value.trim() || t.titulo;
+  t.desc     = document.getElementById('fbts-edit-desc').value.trim();
+  t.conteudo = document.getElementById('fbts-edit-conteudo').value.trim();
+  saveFbts();
+  closeFbtsEditModal();
+  renderFbts();
+}
+
+function deleteFbts(){
+  const id = parseInt(document.getElementById('fbts-edit-id').value);
+  if(!confirm('Apagar esta tarefa?')) return;
+  fbtsData = fbtsData.filter(x=>x.id!==id);
+  saveFbts();
+  closeFbtsEditModal();
+  renderFbts();
+}
+
+function renderFbts(){
+  const list = document.getElementById('fbts-list');
+  if(!fbtsData.length){
+    list.innerHTML = '<div class="empty-state"><i class="ti ti-school"></i>Nenhuma aula ou tarefa</div>';
+    return;
+  }
+  list.innerHTML = fbtsData.map(t=>{
+    const temConteudo = t.conteudo && t.conteudo.trim().length > 0;
+    const preview = temConteudo
+      ? `<div style="font-size:12px;color:var(--muted);line-height:1.5;margin-top:6px;white-space:pre-wrap">${t.conteudo.length>120?t.conteudo.slice(0,120)+'…':t.conteudo}</div>`
+      : '';
+    return `
+    <div class="card" style="margin-bottom:10px;cursor:pointer;transition:box-shadow .15s" onclick="openFbtsEditModal(${t.id})"
+         onmouseenter="this.style.boxShadow='0 2px 12px rgba(91,82,214,.12)'" onmouseleave="this.style.boxShadow=''">
+      <div style="display:flex;align-items:flex-start;gap:12px">
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:2px">
+            <span style="font-weight:600;font-size:14px">${t.titulo}</span>
+            ${temConteudo?'<span class="badge purple" style="font-size:10px">📝 com notas</span>':''}
+          </div>
+          ${t.desc?`<div style="font-size:12px;color:var(--muted);line-height:1.4">${t.desc}</div>`:''}
+          ${preview}
+          <div style="font-size:11px;color:var(--muted);margin-top:6px">${t.criadoEm?new Date(t.criadoEm).toLocaleDateString('pt-PT'):''}</div>
+        </div>
+        <i class="ti ti-chevron-right" style="font-size:16px;color:var(--muted);flex-shrink:0;margin-top:2px"></i>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+document.getElementById('fbts-edit-modal').addEventListener('click',function(e){if(e.target===this)closeFbtsEditModal();});
+
+// ══════════════════════════════════════════════════════════════
+// PENSAMENTOS SOLTOS
+// ══════════════════════════════════════════════════════════════
+let pensamentosData = S.get('pensamentos') || [];
+function savePensamentos(){ S.set('pensamentos', pensamentosData); }
+
+function addPensamento(){
+  const titulo = document.getElementById('pens-titulo').value.trim();
+  const desc   = document.getElementById('pens-desc').value.trim();
+  if(!titulo) return;
+  pensamentosData.unshift({ id: Date.now(), titulo, desc, conteudo: '', criadoEm: new Date().toISOString() });
+  savePensamentos();
+  document.getElementById('pens-titulo').value = '';
+  document.getElementById('pens-desc').value = '';
+  renderPensamentos();
+  setTimeout(()=>document.getElementById('pens-titulo').focus(), 50);
+}
+
+document.addEventListener('keydown', function(e){
+  if(e.key === 'Enter' && document.activeElement && document.activeElement.id === 'pens-titulo') addPensamento();
+});
+
+function openPensEditModal(id){
+  const t = pensamentosData.find(x=>x.id===id);
+  if(!t) return;
+  document.getElementById('pens-edit-id').value = id;
+  document.getElementById('pens-edit-titulo').value = t.titulo;
+  document.getElementById('pens-edit-desc').value = t.desc || '';
+  document.getElementById('pens-edit-conteudo').value = t.conteudo || '';
+  document.getElementById('pens-edit-modal').style.display = 'flex';
+}
+
+function closePensEditModal(){ document.getElementById('pens-edit-modal').style.display = 'none'; }
+
+function savePensEdit(){
+  const id = parseInt(document.getElementById('pens-edit-id').value);
+  const t = pensamentosData.find(x=>x.id===id);
+  if(!t) return;
+  t.titulo   = document.getElementById('pens-edit-titulo').value.trim() || t.titulo;
+  t.desc     = document.getElementById('pens-edit-desc').value.trim();
+  t.conteudo = document.getElementById('pens-edit-conteudo').value.trim();
+  savePensamentos();
+  closePensEditModal();
+  renderPensamentos();
+}
+
+function deletePensamento(){
+  const id = parseInt(document.getElementById('pens-edit-id').value);
+  if(!confirm('Apagar este pensamento?')) return;
+  pensamentosData = pensamentosData.filter(x=>x.id!==id);
+  savePensamentos();
+  closePensEditModal();
+  renderPensamentos();
+}
+
+function renderPensamentos(){
+  const list = document.getElementById('pens-list');
+  if(!pensamentosData.length){
+    list.innerHTML = '<div class="empty-state"><i class="ti ti-bulb"></i>Nenhum pensamento ainda</div>';
+    return;
+  }
+  list.innerHTML = pensamentosData.map(t=>{
+    const temConteudo = t.conteudo && t.conteudo.trim().length > 0;
+    const preview = temConteudo
+      ? `<div style="font-size:12px;color:var(--muted);line-height:1.5;margin-top:6px;white-space:pre-wrap">${t.conteudo.length>120?t.conteudo.slice(0,120)+'…':t.conteudo}</div>`
+      : '';
+    return `
+    <div class="card" style="margin-bottom:10px;cursor:pointer;transition:box-shadow .15s" onclick="openPensEditModal(${t.id})"
+         onmouseenter="this.style.boxShadow='0 2px 12px rgba(91,82,214,.12)'" onmouseleave="this.style.boxShadow=''">
+      <div style="display:flex;align-items:flex-start;gap:12px">
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:2px">
+            <span style="font-weight:600;font-size:14px">${t.titulo}</span>
+            ${temConteudo?'<span class="badge purple" style="font-size:10px">📝 com notas</span>':''}
+          </div>
+          ${t.desc?`<div style="font-size:12px;color:var(--muted);line-height:1.4">${t.desc}</div>`:''}
+          ${preview}
+          <div style="font-size:11px;color:var(--muted);margin-top:6px">${t.criadoEm?new Date(t.criadoEm).toLocaleDateString('pt-PT'):''}</div>
+        </div>
+        <i class="ti ti-chevron-right" style="font-size:16px;color:var(--muted);flex-shrink:0;margin-top:2px"></i>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+document.getElementById('pens-edit-modal').addEventListener('click',function(e){if(e.target===this)closePensEditModal();});
 
 // ══════════════════════════════════════════════════════════════
 // REUNIÕES E CENAS
